@@ -1,6 +1,10 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torch import nn
+import torch
+from torch.nn import TransformerEncoder, TransformerEncoderLayer
+import torch.nn.functional as F
 
 
 class BaselineCNN(nn.Module):
@@ -80,6 +84,7 @@ class BaselineCNNSmall(nn.Module):
         # num_lstm_layers=2,
         filter_size=5,
         num_filters=64,
+        embed_length=142,
     ):
         super(BaselineCNNSmall, self).__init__()
         self.conv1 = nn.Conv2d(
@@ -95,7 +100,7 @@ class BaselineCNNSmall(nn.Module):
 
         self.dropout1 = nn.Dropout(p=0.5)
         self.fc1 = nn.Linear(
-            in_features=64 * 142 * num_sensor_channels, out_features=84
+            in_features=64 * embed_length * num_sensor_channels, out_features=84
         )
 
         self.dropout3 = nn.Dropout(p=0.5)
@@ -103,12 +108,14 @@ class BaselineCNNSmall(nn.Module):
 
         self.num_output_classes = num_output_classes
         self.num_sensor_channels = num_sensor_channels
+        self.embed_length = embed_length
+        self.num_filters = num_filters
 
     def forward(self, x):
         x = F.relu(self.bn1(self.conv1(x)))
         x = F.relu(self.bn2(self.conv2(x)))
 
-        x = x.view(-1, 64 * 142 * self.num_sensor_channels)
+        x = x.view(-1, self.num_filters * self.embed_length * self.num_sensor_channels)
         # x = self.dropout1(x)
         x = F.relu(self.fc1(x))
         x = self.fc3(x)
@@ -133,3 +140,72 @@ class MLP(nn.Module):
         out = self.fc4(x)
 
         return out
+
+
+"""Two contrastive encoders"""
+
+
+class TFC(nn.Module):
+    def __init__(self, configs):
+        super(TFC, self).__init__()
+
+        encoder_layers_t = TransformerEncoderLayer(
+            configs.TSlength_aligned,
+            dim_feedforward=2 * configs.TSlength_aligned,
+            nhead=2,
+        )
+        self.transformer_encoder_t = TransformerEncoder(encoder_layers_t, 2)
+
+        self.projector_t = nn.Sequential(
+            nn.Linear(configs.TSlength_aligned, 256),
+            nn.BatchNorm1d(256),
+            nn.ReLU(),
+            nn.Linear(256, 128),
+        )
+
+        encoder_layers_f = TransformerEncoderLayer(
+            configs.TSlength_aligned,
+            dim_feedforward=2 * configs.TSlength_aligned,
+            nhead=2,
+        )
+        self.transformer_encoder_f = TransformerEncoder(encoder_layers_f, 2)
+
+        self.projector_f = nn.Sequential(
+            nn.Linear(configs.TSlength_aligned, 256),
+            nn.BatchNorm1d(256),
+            nn.ReLU(),
+            nn.Linear(256, 128),
+        )
+
+    def forward(self, x_in_t, x_in_f):
+        """Use Transformer"""
+        x = self.transformer_encoder_t(x_in_t)
+        h_time = x.reshape(x.shape[0], -1)
+
+        """Cross-space projector"""
+        z_time = self.projector_t(h_time)
+
+        """Frequency-based contrastive encoder"""
+        f = self.transformer_encoder_f(x_in_f)
+        h_freq = f.reshape(f.shape[0], -1)
+
+        """Cross-space projector"""
+        z_freq = self.projector_f(h_freq)
+
+        return h_time, z_time, h_freq, z_freq
+
+
+"""Downstream classifier only used in finetuning"""
+
+
+class target_classifier(nn.Module):
+    def __init__(self, configs):
+        super(target_classifier, self).__init__()
+        self.logits = nn.Linear(2 * 128, 64)
+        self.logits_simple = nn.Linear(64, configs.num_classes_target)
+
+    def forward(self, emb):
+        emb_flat = emb.reshape(emb.shape[0], -1)
+        emb = torch.sigmoid(self.logits(emb_flat))
+        pred = self.logits_simple(emb)
+        return pred
