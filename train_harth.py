@@ -27,7 +27,7 @@ config = {
     "BATCH_SIZE": 64,
     "learning_rate": 0.0001,
     "weight_decay": 0.0001,
-    "NUM_EPOCHS": 1,
+    "NUM_EPOCHS": 50,
     "train_valid_split": 0.8,
     "data": r"C:\Users\timot\OneDrive\Desktop\EMORY\Spring 2024\BMI-534\project-code\code\bmi-534-final-project\harth_preprocessed_data_150_window.csv",
     "num_sensor_channels": 6,
