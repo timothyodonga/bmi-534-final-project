@@ -221,15 +221,15 @@ def model_test_cnn(
     total_loss = torch.tensor(total_loss).mean()
     acc = accuracy / total
 
-    F1 = f1_score(
-        y_true=out_label,
-        y_pred=out_pred,
-        average="macro",
-    )
+    # F1 = f1_score(
+    #     y_true=out_label,
+    #     y_pred=out_pred,
+    #     average="macro",
+    # )
 
-    roc_value = roc_auc_score(
-        y_true=out_label, y_score=out_probabilties_, multi_class="ovr", average="macro"
-    )
+    # roc_value = roc_auc_score(
+    #     y_true=out_label, y_score=out_probabilties_, multi_class="ovr", average="macro"
+    # )
     # print(f"CNN Testing: Loss={total_loss} |  Acc={acc}| F1={F1} | AUROC={roc_value} |")
 
     return total_loss, out_batch, out_label, out_pred, out_probabilties_
@@ -296,15 +296,15 @@ def model_test(
     total_loss = torch.tensor(total_loss).mean()
     acc = accuracy / total
 
-    F1 = f1_score(
-        y_true=out_label,
-        y_pred=out_pred,
-        average="macro",
-    )
+    # F1 = f1_score(
+    #     y_true=out_label,
+    #     y_pred=out_pred,
+    #     average="macro",
+    # )
 
-    roc_value = roc_auc_score(
-        y_true=out_label, y_score=out_probabilties_, multi_class="ovr", average="macro"
-    )
+    # roc_value = roc_auc_score(
+    #     y_true=out_label, y_score=out_probabilties_, multi_class="ovr", average="macro"
+    # )
     # print(f"CNN Testing: Loss={total_loss} |  Acc={acc}| F1={F1} | AUROC={roc_value} |")
 
     return total_loss, out_batch, out_label, out_pred, out_probabilties_

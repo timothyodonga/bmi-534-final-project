@@ -16,7 +16,7 @@ import torch.nn.functional as F
 from dataset.dataset import CustomDataset
 from torch.utils.data import DataLoader
 
-from model import BaselineCNN, MLP, BaselineCNNSmall
+from model import *
 from routines.train import train_one_epoch
 from routines.validate import validate_model
 from routines.test import test_model
@@ -27,9 +27,9 @@ config = {
     "BATCH_SIZE": 64,
     "learning_rate": 0.0001,
     "weight_decay": 0.0001,
-    "NUM_EPOCHS": 1,
+    "NUM_EPOCHS": 50,
     "train_valid_split": 0.8,
-    "data": r"C:\Users\timot\OneDrive\Desktop\EMORY\Spring 2024\BMI-534\project-code\code\bmi-534-final-project\harth_preprocessed_data_150_window.csv",
+    "data": r"C:\Users\timot\OneDrive\Desktop\EMORY\Spring 2024\BMI-534\project-code\code\bmi-534-final-project\csv_files\harth_preprocessed_data_150_window.csv",
     "num_sensor_channels": 6,
     "class_weights": [
         0.15076889696509452,
@@ -169,7 +169,8 @@ for key, value in k_fold_split.items():
 
     # %%s
     # model = BaselineCNN(num_sensor_channels=6, num_output_classes=12)
-    model = BaselineCNNSmall(num_sensor_channels=6, num_output_classes=12)
+    # model = BaselineCNNSmall(num_sensor_channels=6, num_output_classes=12)
+    model = MLPSmall(num_sensor_channels=6, num_output_classes=12)
     # model = MLP(num_sensor_channels=6, num_output_classes=12)
     model.to(device)
     print(model)
@@ -262,4 +263,6 @@ for key, value in k_fold_split.items():
         [df_performance, pd.DataFrame(new_data, index=[0])], ignore_index=True
     )
 # %%
-df_performance.to_csv("harth_cnn_small_performance_.csv", index=False, mode="a")
+df_performance.to_csv(
+    f"harth_mlp_small_performance_150_{timestamp}.csv", index=False, mode="a"
+)
