@@ -22,7 +22,12 @@ import os
 
 # %%
 # The daily living dataset, has series for subject who are in the defog dataset. Careful with pre-training and then training on this dataset. If you pretrain and then test, you might end up leaking information
-dir = r"C:\Users\timot\OneDrive\Desktop\EMORY\Fall 2023\CS-598R -Rotation Project\Code\KaggleFOG\data\unlabeled"
+config = {
+    "dir": r"C:\Users\timot\OneDrive\Desktop\EMORY\Fall 2023\CS-598R -Rotation Project\Code\KaggleFOG\data\unlabeled",
+    "save_path": r"./",
+    "sample": True,
+}
+dir = config["dir"]
 
 print(os.listdir(dir))
 
@@ -46,25 +51,33 @@ for i in range(len(subj_files)):
     df = pd.concat([df, df_], ignore_index=True)
 
     # TODO - Remove this in the code when the full code actually works
-    if i == 5:
+    if i == 4:
         break
     # print(df.head())
 # %%
 min_values = df.min()
 # %%
 min_values_df_sample = pd.DataFrame(min_values).T
-min_values_df_sample.to_csv("daily_living_min_values_sample.csv", index=False)
+min_values_df_sample[["AccV", "AccML", "AccAP"]].to_csv(
+    f"{config['save_path']}/daily_living_min_values_sample.csv", index=False
+)
 # %%
 max_values = df.max()
 # %%
 max_values_df_sample = pd.DataFrame(max_values).T
-max_values_df_sample.to_csv("daily_living_max_values_sample.csv", index=False)
+max_values_df_sample[["AccV", "AccML", "AccAP"]].to_csv(
+    f"{config['save_path']}/daily_living_max_values_sample.csv", index=False
+)
 
 # %%
 # Now to segment the data into 206 time chunks. Just do it for 5 subjects
 
-max_values_daily = pd.read_csv("daily_living_max_values_sample.csv").to_numpy()
-min_values_daily = pd.read_csv("daily_living_min_values_sample.csv").to_numpy()
+max_values_daily = pd.read_csv(
+    f"{config['save_path']}/daily_living_max_values_sample.csv"
+).to_numpy()
+min_values_daily = pd.read_csv(
+    f"{config['save_path']}/daily_living_min_values_sample.csv"
+).to_numpy()
 
 # %%
 sliding_window_length = 206
@@ -89,8 +102,9 @@ for i in range(len(subj_files)):
         sliding_window_step,
     )
     segmented_features.append(features)
-    if i == 4:
-        break
+    if config["sample"] == True:
+        if i == 4:
+            break
 
 # %%
 import numpy as np
@@ -112,6 +126,9 @@ train_tensor = {
 }
 
 # %%
-torch.save(train_tensor, "daily_living_sample.pt")
+if config["sample"]:
+    torch.save(train_tensor, f"{config['save_path']}/daily_living_sample.pt")
+else:
+    torch.save(train_tensor, f"{config['save_path']}/daily_living.pt")
 # %%
 # np.random.randint(0,1,size = 10)
