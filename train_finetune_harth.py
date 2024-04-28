@@ -430,7 +430,9 @@ for fold in folds:
             "F1 (macro)": [f1],
             "AUC": [roc_value],
             "model_type": [config["model_type"]],
-            "model": [f'{config["arch"]}_fold_{fold}_classifier_{config['model_type']}_{timestamp}'],
+            "model": [
+                f'{config["arch"]}_fold_{fold}_classifier_{config["model_type"]}_{timestamp}'
+            ],
         }
     )
 
@@ -438,9 +440,7 @@ for fold in folds:
         [df_performance, pd.DataFrame(new_data, index=[0])], ignore_index=True
     )
 
-    df_performance.to_csv(
-            f"tfc_finetuned_performance.csv", index=False, mode="a"
-        )
+    df_performance.to_csv(f"tfc_finetuned_performance.csv", index=False, mode="a")
 
     # if config["model_name"] == "cnn_small":
     #     df_performance.to_csv(
