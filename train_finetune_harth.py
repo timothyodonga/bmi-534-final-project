@@ -47,7 +47,7 @@ for fold in folds:
         "model_type": f"{sys.argv[1]}",
         "arch": "daily2harth",
         "training_mode": "fine_tune_test",
-        "num_epochs": 500,
+        "num_epochs": 1,
         "model_name": "harth_cnn_small_finetuned",
         "class_weights": [
             0.15076889696509452,
