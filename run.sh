@@ -1,5 +1,5 @@
 echo "Executing for fold 0"
-python train_finetune_harth.py
+python train_finetune_harth.py "cnn_small"
 
 # echo "Executing for fold 1"
 # python train_finetune_harth.py 1

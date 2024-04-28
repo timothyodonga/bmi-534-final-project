@@ -30,6 +30,8 @@ df_performance = pd.DataFrame()
 folds = ["0", "1", "2", "3", "4"]
 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
+print(f"Model type: {sys.argv[1]}")
+
 for fold in folds:
     print(f"Fold: {fold}")
     training_mode = "fine_tune_test"
@@ -42,7 +44,7 @@ for fold in folds:
         "fine_tune_test": f"/opt/scratchspace/todonga/bmi-534-project/processed_data/harth_test_fold_{fold}.pt",
         "pretrained_model": "saved_models/ckp_last.pt",
         "experiment_log_dir": "./",
-        "model_type": "cnn_small",
+        "model_type": f"{sys.argv[1]}",
         "arch": "daily2harth",
         "training_mode": "fine_tune_test",
         "num_epochs": 500,
@@ -427,7 +429,8 @@ for fold in folds:
             "Accuracy": [accuracy],
             "F1 (macro)": [f1],
             "AUC": [roc_value],
-            "model": [f'{config["arch"]}_fold_{fold}_classifier_{timestamp}'],
+            "model_type": [config["model_type"]],
+            "model": [f'{config["arch"]}_fold_{fold}_classifier_{config['model_type']}_{timestamp}'],
         }
     )
 
@@ -435,15 +438,19 @@ for fold in folds:
         [df_performance, pd.DataFrame(new_data, index=[0])], ignore_index=True
     )
 
-    if config["model_name"] == "cnn_small":
-        df_performance.to_csv(
-            f"tfc_finetuned_small_cnn_performance.csv", index=False, mode="a"
+    df_performance.to_csv(
+            f"tfc_finetuned_performance.csv", index=False, mode="a"
         )
-    elif config["model_name"] == "cnn":
-        df_performance.to_csv(
-            f"tfc_finetuned_cnn_performance.csv", index=False, mode="a"
-        )
-    else:
-        df_performance.to_csv(
-            f"tfc_finetuned_mlp_performance.csv", index=False, mode="a"
-        )
+
+    # if config["model_name"] == "cnn_small":
+    #     df_performance.to_csv(
+    #         f"tfc_finetuned_small_cnn_performance.csv", index=False, mode="a"
+    #     )
+    # elif config["model_name"] == "cnn":
+    #     df_performance.to_csv(
+    #         f"tfc_finetuned_cnn_performance.csv", index=False, mode="a"
+    #     )
+    # else:
+    #     df_performance.to_csv(
+    #         f"tfc_finetuned_mlp_performance.csv", index=False, mode="a"
+    #     )
