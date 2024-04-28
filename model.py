@@ -142,6 +142,44 @@ class MLP(nn.Module):
         return out
 
 
+class MLPSmall(nn.Module):
+    def __init__(self, num_sensor_channels, num_output_classes):
+        super(MLPSmall, self).__init__()
+        self.fc1 = nn.Linear(in_features=150 * num_sensor_channels, out_features=1800)
+        # self.fc2 = nn.Linear(in_features=1800, out_features=900)
+        # self.fc3 = nn.Linear(in_features=900, out_features=450)
+        self.fc4 = nn.Linear(in_features=1800, out_features=num_output_classes)
+        self.num_sensor_channels = num_sensor_channels
+
+    def forward(self, x):
+        x = x.view(-1, 150 * self.num_sensor_channels)
+        x = F.relu(self.fc1(x))
+        # x = F.relu(self.fc2(x))
+        # x = F.relu(self.fc3(x))
+        out = self.fc4(x)
+
+        return out
+
+
+class MLPTFC(nn.Module):
+    def __init__(self, num_sensor_channels, num_output_classes):
+        super(MLPTFC, self).__init__()
+        self.fc1 = nn.Linear(in_features=128 * num_sensor_channels, out_features=512)
+        # self.fc2 = nn.Linear(in_features=1800, out_features=900)
+        # self.fc3 = nn.Linear(in_features=900, out_features=450)
+        self.fc4 = nn.Linear(in_features=512, out_features=num_output_classes)
+        self.num_sensor_channels = num_sensor_channels
+
+    def forward(self, x):
+        x = x.view(-1, 128 * self.num_sensor_channels)
+        x = F.relu(self.fc1(x))
+        # x = F.relu(self.fc2(x))
+        # x = F.relu(self.fc3(x))
+        out = self.fc4(x)
+
+        return out
+
+
 """Two contrastive encoders"""
 
 
