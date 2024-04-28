@@ -44,8 +44,8 @@ def test_model(
             vloss = vloss0
             running_vloss += vloss
 
-            print(f"Printing the output from batch {i}")
-            print(vout0.shape)
+            # print(f"Printing the output from batch {i}")
+            # print(vout0.shape)
             vout = F.softmax(vout0, dim=1)
 
             _, pred_labels = torch.max(vout0, 1)
@@ -59,6 +59,7 @@ def test_model(
             out_probabilties.append(vout.cpu())
 
         out_probabilties_ = np.vstack(out_probabilties)
+        
 
         avg_vloss = running_vloss / (i + 1)
         print("LOSS valid {}".format(avg_vloss))

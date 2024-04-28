@@ -90,14 +90,21 @@ for epoch in range(1, configs.num_epoch + 1):
 
     if train_loss < gtrain_loss:
         os.makedirs(os.path.join(experiment_log_dir, "saved_models"), exist_ok=True)
-        chkpoint = {"model_state_dict": TFC_model.state_dict()}
+        # chkpoint = {"model_state_dict": TFC_model.state_dict()}
+        # torch.save(
+        #     chkpoint, os.path.join(experiment_log_dir, "saved_models", f"ckp_last.pt")
+        # )
+        # print(
+        #     "Pretrained model is stored at folder:{}".format(
+        #         experiment_log_dir + "saved_models" + "ckp_last.pt"
+        #     )
+        # )
+
         torch.save(
-            chkpoint, os.path.join(experiment_log_dir, "saved_models", f"ckp_last.pt")
+            TFC_model.state_dict(),
+            os.path.join(experiment_log_dir, "saved_models", f"ckp_last.pt"),
         )
-        print(
-            "Pretrained model is stored at folder:{}".format(
-                experiment_log_dir + "saved_models" + "ckp_last.pt"
-            )
-        )
+
+        print("TFC loss dropped model saved")
 
         gtrain_loss = train_loss

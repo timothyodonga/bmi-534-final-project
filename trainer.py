@@ -219,7 +219,7 @@ def model_pretrain(
 ):
     total_loss = []
     model.train()
-    global loss, loss_t, loss_f, l_TF, loss_c, data_test, data_f_test
+    # global loss, loss_t, loss_f, l_TF, loss_c, data_test, data_f_test
 
     # optimizer
     model_optimizer.zero_grad()
@@ -271,6 +271,7 @@ def model_pretrain(
     )
 
     ave_loss = torch.tensor(total_loss).mean()
+    print(f"Average pretrain loss: {ave_loss}")
 
     return ave_loss
 
