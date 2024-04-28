@@ -174,7 +174,7 @@ for key, value in k_fold_split.items():
     model.to(device)
     print(model)
     # %%
-    criterion = nn.CrossEntropyLoss()
+    # criterion = nn.CrossEntropyLoss()
     class_weights = 1 / torch.tensor(config["class_weights"], dtype=torch.float)
     class_weights.to(device)
     criterion = nn.CrossEntropyLoss(weight=class_weights).to(device)
