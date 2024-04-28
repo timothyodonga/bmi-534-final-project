@@ -29,7 +29,7 @@ config = {
     "weight_decay": 0.0001,
     "NUM_EPOCHS": 50,
     "train_valid_split": 0.8,
-    "data": r"C:\Users\timot\OneDrive\Desktop\EMORY\Spring 2024\BMI-534\project-code\code\bmi-534-final-project\csv_files\harth_preprocessed_data_150_window.csv",
+    "data": "harth_preprocessed_data_206_window.csv",
     "num_sensor_channels": 6,
     "class_weights": [
         0.15076889696509452,
