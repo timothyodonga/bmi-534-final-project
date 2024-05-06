@@ -16,6 +16,7 @@ class BaselineCNN(nn.Module):
         # num_lstm_layers=2,
         filter_size=5,
         num_filters=64,
+        embed_length=112,
     ):
         super(BaselineCNN, self).__init__()
         self.conv1 = nn.Conv2d(
@@ -43,7 +44,8 @@ class BaselineCNN(nn.Module):
 
         self.dropout1 = nn.Dropout(p=0.5)
         self.fc1 = nn.Linear(
-            in_features=64 * 134 * num_sensor_channels, out_features=84
+            in_features=num_filters * embed_length * num_sensor_channels,
+            out_features=84,
         )
         self.dropout2 = nn.Dropout(p=0.5)
         self.fc2 = nn.Linear(in_features=84, out_features=84)
@@ -53,6 +55,8 @@ class BaselineCNN(nn.Module):
 
         self.num_output_classes = num_output_classes
         self.num_sensor_channels = num_sensor_channels
+        self.embed_length = embed_length
+        self.num_filters = num_filters
 
     def forward(self, x):
         x = F.relu(self.bn1(self.conv1(x)))
@@ -64,7 +68,7 @@ class BaselineCNN(nn.Module):
         # print(x.shape)
 
         # TODO - Remove the hardcoded 134 number.
-        x = x.view(-1, 64 * 134 * self.num_sensor_channels)
+        x = x.view(-1, self.num_filters * self.embed_length * self.num_sensor_channels)
         x = self.dropout1(x)
         x = F.relu(self.fc1(x))
         x = self.dropout2(x)

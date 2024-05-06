@@ -7,28 +7,24 @@ import pandas as pd
 import torch.nn as nn
 from sklearn.metrics import (
     f1_score,
-    precision_score,
-    recall_score,
     accuracy_score,
     roc_auc_score,
 )
 import torch.nn.functional as F
 from dataset.dataset import CustomDataset
 from torch.utils.data import DataLoader
-
 from model import *
-from routines.train import train_one_epoch
-from routines.validate import validate_model
 from routines.test import test_model
 import kfolds
 from utils import standardize_classes
+import os
 
 # %%
 config = {
     "BATCH_SIZE": 64,
     "learning_rate": 0.0001,
     "weight_decay": 0.0001,
-    "NUM_EPOCHS": 10,
+    "NUM_EPOCHS": 50,
     "train_valid_split": 0.8,
     "data": r"C:\Users\timot\OneDrive\Desktop\EMORY\Spring 2024\BMI-534\project-code\code\bmi-534-final-project\csv_files\harth_preprocessed_data_150_window.csv",
     "num_sensor_channels": 6,
@@ -47,10 +43,23 @@ config = {
         0.00021697268856282715,
     ],
     "k": 5,
-    "model_name": f"mlp",
+    "model_name": f"mlp_harth",
+    "saved_models": {
+        "0": r"saved_models\mlp_harth_0_5_20240422_124416.pth",
+        "1": r"saved_models\mlp_harth_1_5_20240422_124416.pth",
+        "2": r"saved_models\mlp_harth_2_5_20240422_124416.pth",
+        "3": r"saved_models\mlp_harth_3_5_20240422_124416.pth",
+        "4": r"saved_models\mlp_harth_4_5_20240422_124416.pth",
+    },
 }
 
+
 df_performance = pd.DataFrame()
+
+
+# %%
+
+
 # %%
 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 df = pd.read_csv(config["data"])
@@ -79,74 +88,25 @@ for key, value in k_fold_split.items():
     train = value["train"]
     test = value["test"]
 
-    # %%
-
-    df_train = df[df["subject"].isin(train)]
-    df_train["label_"].value_counts(normalize=True)
-
     df_test = df[df["subject"].isin(test)]
     df_test["label_"].value_counts(normalize=True)
 
     # %%
-    df_train_train_X = df_train["features"].iloc[
-        : int(len(df_train) * config["train_valid_split"])
-    ]
-    df_train_train_y = df_train["label_"].iloc[
-        : int(len(df_train) * config["train_valid_split"])
-    ]
 
-    df_train_train_y.value_counts(normalize=True)
-
-    print("Spliting the data into train<>validation")
-    df_train_valid_X = df_train["features"].iloc[
-        int(len(df_train) * config["train_valid_split"]) :
-    ]
-    df_train_valid_y = df_train["label_"].iloc[
-        int(len(df_train) * config["train_valid_split"]) :
-    ]
-    print(df_train_valid_y.value_counts(normalize=True))
-
-    # %%
-
-    train_data = CustomDataset(
-        features=df_train_train_X.tolist(),
-        labels=df_train_train_y.tolist(),
-        train_valid_split=1.0,
-    )
-    valid_data = CustomDataset(
-        features=df_train_valid_X.tolist(),
-        labels=df_train_valid_y.tolist(),
-        train_valid_split=1.0,
-    )
     test_data = CustomDataset(
         features=df_test["features"].tolist(),
         labels=df_test["label_"].tolist(),
         train_valid_split=1.0,
     )
 
-    # %%
-
-    train_dataloader = DataLoader(
-        train_data, batch_size=config["BATCH_SIZE"], shuffle=True
-    )
-
-    validation_dataloader = DataLoader(
-        valid_data, batch_size=config["BATCH_SIZE"], shuffle=False
-    )
-
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(device)
 
     # %%s
-    model_name = config["model_name"]
-    if model_name == "cnn":
-        model = BaselineCNN(num_sensor_channels=6, num_output_classes=12)
-    elif model_name == "cnn_small":
-        model = BaselineCNNSmall(num_sensor_channels=6, num_output_classes=12)
-    elif model_name == "mlp_small":
-        model = MLPSmall(num_sensor_channels=6, num_output_classes=12)
-    elif model_name == "mlp":
-        model = MLP(num_sensor_channels=6, num_output_classes=12)
+    # model = BaselineCNN(num_sensor_channels=6, num_output_classes=12)
+    # model = BaselineCNNSmall(num_sensor_channels=6, num_output_classes=12)
+    # model = MLPSmall(num_sensor_channels=6, num_output_classes=12)
+    model = MLP(num_sensor_channels=6, num_output_classes=12)
     model.to(device)
     print(model)
     # %%
@@ -162,44 +122,12 @@ for key, value in k_fold_split.items():
         weight_decay=config["weight_decay"],
     )
 
-    # model_name = config["model_name"]
+    model_name = config["model_name"]
     best_vloss = np.inf
     loss_fn = criterion
 
-    for epoch_number in range(config["NUM_EPOCHS"]):
-        print("EPOCH {}:".format(epoch_number))
-        model.train(True)
-        model.zero_grad()
-
-        print("===============")
-        print("Training now")
-        avg_loss = train_one_epoch(
-            train_dataloader=train_dataloader,
-            optimizer=optimizer,
-            device=device,
-            criterion=criterion,
-            model=model,
-        )
-
-        print(f"Epoch {epoch_number} TRAIN-LOSS: {avg_loss}")
-
-        best_vloss = validate_model(
-            model=model,
-            validation_dataloader=validation_dataloader,
-            device=device,
-            loss_fn=criterion,
-            best_vloss=best_vloss,
-            epoch_number=epoch_number,
-            key=key,
-            k=config["k"],
-            timestamp=timestamp,
-            model_name=model_name,
-        )
-
     # %%
-    model.load_state_dict(
-        torch.load(f"{config['model_name']}_{key}_{config['k']}_{timestamp}.pth")
-    )
+    model.load_state_dict(torch.load(config["saved_models"][key]))
     model.to(device)
 
     test_dataloader = DataLoader(test_data, batch_size=1024, shuffle=False)
@@ -222,10 +150,8 @@ for key, value in k_fold_split.items():
         y_true=out_label, y_pred=out_pred, average="macro", zero_division=np.nan
     )
     print(f1_value)
-
     acc_value = accuracy_score(y_true=out_label, y_pred=out_pred)
     print(acc_value)
-
     roc_value = roc_auc_score(
         y_true=out_label, y_score=out_prob, multi_class="ovr", average="macro"
     )
@@ -233,27 +159,23 @@ for key, value in k_fold_split.items():
     f1_per_class = f1_score(
         y_true=out_label, y_pred=out_pred, average=None, zero_division=np.nan
     )
-    print(type(f1_per_class))
+    print(f1_per_class)
 
-    new_data = pd.DataFrame(
-        {
-            "fold": [key],
-            "f1": [f1_value],
-            "acc": [acc_value],
-            "auc": [roc_value],
-            "f1_per_class": [f1_per_class.tolist()],
-            "model": [f"{config['model_name']}_{key}_{config['k']}_{timestamp}.pth"],
-        }
-    )
-
-    print(new_data)
+    new_data = {
+        "fold": key,
+        "f1": f1_value,
+        "acc": acc_value,
+        "auc": roc_value,
+        "f1 per class": f1_per_class,
+        "model": config["saved_models"][key],
+    }
 
     df_performance = pd.concat(
         [df_performance, pd.DataFrame(new_data, index=[0])], ignore_index=True
     )
-
-    break
 # %%
-df_performance.to_csv(
-    f"harth_{model_name}_performance_150_{timestamp}.csv", index=False, mode="a"
-)
+file_path = f'{config["model_name"]}_performance_150_{timestamp}.csv'
+if os.path.exists(file_path):
+    df_performance.to_csv(file_path, index=False, mode="a")
+else:
+    df_performance.to_csv(file_path, index=False)

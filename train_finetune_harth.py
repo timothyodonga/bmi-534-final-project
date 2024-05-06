@@ -42,11 +42,11 @@ for fold in folds:
         "fine_tune_test": f"C:/Users/timot/OneDrive/Desktop/EMORY/Spring 2024/BMI-534/project-code/code/bmi-534-final-project/processed_data/harth_test_fold_{fold}.pt",
         "pretrained_model": r"C:\Users\timot\OneDrive\Desktop\EMORY\Spring 2024\BMI-534\project-code\code\bmi-534-final-project\saved_models\ckp_last.pt",
         "experiment_log_dir": r"C:\Users\timot\OneDrive\Desktop\EMORY\Spring 2024\BMI-534\project-code\code\bmi-534-final-project",
-        "model_type": "mlp",
+        "model_type": "cnn",
         "arch": "daily2harth",
         "training_mode": "fine_tune_test",
-        "num_epochs": 1,
-        "model_name": "harth_mlp_finetuned",
+        "num_epochs": 200,
+        # "model_name": "harth_mlp_finetuned",
         "class_weights": [
             0.15076889696509452,
             0.01749342301537794,
@@ -190,7 +190,7 @@ for fold in folds:
     class_weights.to(device)
     criterion = nn.CrossEntropyLoss(weight=class_weights).to(device)
 
-    patience = 30
+    patience = 20
     pt_counter = 0
     max_f1 = 0
 
@@ -403,7 +403,9 @@ for fold in folds:
         y_pred=out_pred,
     )
 
-    f1 = f1_score(y_true=out_label, y_pred=out_pred, average="macro")
+    f1 = f1_score(
+        y_true=out_label, y_pred=out_pred, average="macro", zero_division=np.nan
+    )
 
     try:
         roc_value = roc_auc_score(
@@ -435,15 +437,32 @@ for fold in folds:
         [df_performance, pd.DataFrame(new_data, index=[0])], ignore_index=True
     )
 
-    if config["model_name"] == "cnn_small":
-        df_performance.to_csv(
-            f"tfc_finetuned_small_cnn_performance.csv", index=False, mode="a"
-        )
-    elif config["model_name"] == "cnn":
-        df_performance.to_csv(
-            f"tfc_finetuned_cnn_performance.csv", index=False, mode="a"
-        )
-    else:
-        df_performance.to_csv(
-            f"tfc_finetuned_mlp_performance.csv", index=False, mode="a"
-        )
+
+print(df_performance)
+
+#     if config["model_type"] == "cnn_small":
+#         df_performance.to_csv(
+#             f"tfc_finetuned_small_cnn_performance.csv", index=False, mode="a"
+#         )
+#     elif config["model_type"] == "cnn":
+#         df_performance.to_csv(
+#             f"tfc_finetuned_cnn_performance.csv", index=False, mode="a"
+#         )
+#     else:
+#         df_performance.to_csv(
+#             f"tfc_finetuned_mlp_performance.csv", index=False, mode="a"
+#         )
+
+
+# if config["model_type"] == "cnn_small":
+#     df_performance.to_csv(
+#         f"tfc_finetuned_small_cnn_performance_final.csv", index=False, mode="a"
+#     )
+# elif config["model_type"] == "cnn":
+#     df_performance.to_csv(
+#         f"tfc_finetuned_cnn_performance_final.csv", index=False, mode="a"
+#     )
+# else:
+#     df_performance.to_csv(
+#         f"tfc_finetuned_mlp_performance_final.csv", index=False, mode="a"
+#     )
