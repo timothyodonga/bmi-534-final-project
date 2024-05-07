@@ -224,6 +224,9 @@ class Load_DatasetTwo(Dataset):
     def __len__(self):
         return self.len
 
+    def get_labels(self):
+        return self.y_data
+
 
 def data_generator(
     sourcedata_path, targetdata_path, configs, training_mode, subset=True

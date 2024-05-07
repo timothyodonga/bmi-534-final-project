@@ -24,6 +24,7 @@ from model import *
 from tfc_finetune_routines import *
 import sys
 import pandas as pd
+from torchsampler import ImbalancedDatasetSampler
 
 # %%
 df_performance = pd.DataFrame()
@@ -41,12 +42,12 @@ for fold in folds:
         "fine_tune_train": f"C:/Users/timot/OneDrive/Desktop/EMORY/Spring 2024/BMI-534/project-code/code/bmi-534-final-project/processed_data/harth_train_fold_{fold}.pt",
         "fine_tune_test": f"C:/Users/timot/OneDrive/Desktop/EMORY/Spring 2024/BMI-534/project-code/code/bmi-534-final-project/processed_data/harth_test_fold_{fold}.pt",
         # "pretrained_model": r"C:\Users\timot\OneDrive\Desktop\EMORY\Spring 2024\BMI-534\project-code\code\bmi-534-final-project\saved_models\ckp_last.pt",
-        "pretrained_model": r"saved_models/har_ckp_last.pt",
+        "pretrained_model": r"saved_models/ckp_last.pt",
         "experiment_log_dir": r"C:\Users\timot\OneDrive\Desktop\EMORY\Spring 2024\BMI-534\project-code\code\bmi-534-final-project",
         "model_type": "cnn_small",
-        "arch": "har2harth",
+        "arch": "daily2harth",
         "training_mode": "fine_tune_test",
-        "num_epochs": 100,
+        "num_epochs": 50,
         # "model_name": "harth_mlp_finetuned",
         "class_weights": [
             0.15076889696509452,
@@ -107,17 +108,19 @@ for fold in folds:
     finetune_loader = torch.utils.data.DataLoader(
         dataset=finetune_dataset_train,
         batch_size=configs.target_batch_size,
-        shuffle=True,
+        shuffle=False,
         drop_last=configs.drop_last,
         num_workers=0,
+        sampler=ImbalancedDatasetSampler(finetune_dataset_train),
     )
 
     finetune_loader_valid = torch.utils.data.DataLoader(
         dataset=finetune_dataset_valid,
         batch_size=configs.target_batch_size,
-        shuffle=True,
+        shuffle=False,
         drop_last=configs.drop_last,
         num_workers=0,
+        sampler=ImbalancedDatasetSampler(finetune_dataset_valid),
     )
 
     test_loader = torch.utils.data.DataLoader(
@@ -188,7 +191,8 @@ for fold in folds:
 
     class_weights = 1 / torch.tensor(config["class_weights"], dtype=torch.float)
     class_weights.to(device)
-    criterion = nn.CrossEntropyLoss(weight=class_weights).to(device)
+    # criterion = nn.CrossEntropyLoss(weight=class_weights).to(device)
+    criterion = nn.CrossEntropyLoss()
 
     patience = 20
     pt_counter = 0
@@ -440,29 +444,11 @@ for fold in folds:
 
 print(df_performance)
 
-#     if config["model_type"] == "cnn_small":
-#         df_performance.to_csv(
-#             f"tfc_finetuned_small_cnn_performance.csv", index=False, mode="a"
-#         )
-#     elif config["model_type"] == "cnn":
-#         df_performance.to_csv(
-#             f"tfc_finetuned_cnn_performance.csv", index=False, mode="a"
-#         )
-#     else:
-#         df_performance.to_csv(
-#             f"tfc_finetuned_mlp_performance.csv", index=False, mode="a"
-#         )
-
-
-# if config["model_type"] == "cnn_small":
-#     df_performance.to_csv(
-#         f"tfc_finetuned_small_cnn_performance_final.csv", index=False, mode="a"
-#     )
-# elif config["model_type"] == "cnn":
-#     df_performance.to_csv(
-#         f"tfc_finetuned_cnn_performance_final.csv", index=False, mode="a"
-#     )
-# else:
-#     df_performance.to_csv(
-#         f"tfc_finetuned_mlp_performance_final.csv", index=False, mode="a"
-#     )
+file_path = f'finetuned_{config["model_type"]}_{timestamp}_performance.csv'
+if os.path.exists(file_path):
+    df_performance.to_csv(file_path, index=False, mode="a", header=None)
+else:
+    df_performance.to_csv(
+        file_path,
+        index=False,
+    )

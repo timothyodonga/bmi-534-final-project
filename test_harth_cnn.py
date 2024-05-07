@@ -70,11 +70,11 @@ for fold in folds:
         #     "4": r"daily2harth_cnn_small_fold_4_classifier_20240429_150415.pt",
         # },
         "saved_models_classifier": {
-            "0": r"experiments_logs\finetunemodel\har2harth_cnn_small_fold_0_classifier_20240506_211941.pt",
-            "1": r"experiments_logs\finetunemodel\har2harth_cnn_small_fold_1_classifier_20240506_213521.pt",
-            "2": r"experiments_logs\finetunemodel\har2harth_cnn_small_fold_2_classifier_20240506_214913.pt",
-            "3": r"experiments_logs\finetunemodel\har2harth_cnn_small_fold_3_classifier_20240506_220818.pt",
-            "4": r"experiments_logs\finetunemodel\har2harth_cnn_small_fold_4_classifier_20240506_222314.pt",
+            "0": r"experiments_logs\finetunemodel\daily2harth_cnn_small_fold_0_classifier_20240507_100812.pt",
+            "1": r"experiments_logs\finetunemodel\daily2harth_cnn_small_fold_1_classifier_20240507_100812.pt",
+            "2": r"experiments_logs\finetunemodel\daily2harth_cnn_small_fold_2_classifier_20240507_100812.pt",
+            "3": r"experiments_logs\finetunemodel\daily2harth_cnn_small_fold_3_classifier_20240507_100812.pt",
+            "4": r"experiments_logs\finetunemodel\daily2harth_cnn_small_fold_4_classifier_20240507_100812.pt",
         },
         # "saved_models_tfc": {
         #     "0": r"daily2harth_cnn_small_tfc_fold_0_model_20240429_145525.pt",
@@ -84,11 +84,11 @@ for fold in folds:
         #     "4": r"daily2harth_cnn_small_tfc_fold_4_model_20240429_150415.pt",
         # },
         "saved_models_tfc": {
-            "0": r"experiments_logs\finetunemodel\har2harth_cnn_small_tfc_fold_0_model_20240506_211941.pt",
-            "1": r"experiments_logs\finetunemodel\har2harth_cnn_small_tfc_fold_1_model_20240506_213521.pt",
-            "2": r"experiments_logs\finetunemodel\har2harth_cnn_small_tfc_fold_2_model_20240506_214913.pt",
-            "3": r"experiments_logs\finetunemodel\har2harth_cnn_small_tfc_fold_3_model_20240506_220818.pt",
-            "4": r"experiments_logs\finetunemodel\har2harth_cnn_small_tfc_fold_4_model_20240506_222314.pt",
+            "0": r"experiments_logs\finetunemodel\daily2harth_cnn_small_tfc_fold_0_model_20240507_100812.pt",
+            "1": r"experiments_logs\finetunemodel\daily2harth_cnn_small_tfc_fold_1_model_20240507_100812.pt",
+            "2": r"experiments_logs\finetunemodel\daily2harth_cnn_small_tfc_fold_2_model_20240507_100812.pt",
+            "3": r"experiments_logs\finetunemodel\daily2harth_cnn_small_tfc_fold_3_model_20240507_100812.pt",
+            "4": r"experiments_logs\finetunemodel\daily2harth_cnn_small_tfc_fold_4_model_20240507_100812.pt",
         },
     }
 
@@ -118,7 +118,7 @@ for fold in folds:
     test_loader = torch.utils.data.DataLoader(
         dataset=test_dataset,
         batch_size=configs.target_batch_size,
-        shuffle=True,
+        shuffle=False,
         drop_last=False,
         num_workers=0,
     )
@@ -179,7 +179,8 @@ for fold in folds:
 
     class_weights = 1 / torch.tensor(config["class_weights"], dtype=torch.float)
     class_weights.to(device)
-    criterion = nn.CrossEntropyLoss(weight=class_weights).to(device)
+    # criterion = nn.CrossEntropyLoss(weight=class_weights).to(device)
+    criterion = nn.CrossEntropyLoss()
 
     # %%
     # evaluate on the test set
