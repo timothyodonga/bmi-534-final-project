@@ -31,6 +31,8 @@ df_performance = pd.DataFrame()
 folds = ["0", "1", "2", "3", "4"]
 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
+print(f"Model type: {sys.argv[1]}")
+
 for fold in folds:
     print(f"Fold: {fold}")
     training_mode = "fine_tune_test"
@@ -39,16 +41,15 @@ for fold in folds:
     # configs.num_epoch = 50
 
     config = {
-        "fine_tune_train": f"C:/Users/timot/OneDrive/Desktop/EMORY/Spring 2024/BMI-534/project-code/code/bmi-534-final-project/processed_data/harth_train_fold_{fold}.pt",
-        "fine_tune_test": f"C:/Users/timot/OneDrive/Desktop/EMORY/Spring 2024/BMI-534/project-code/code/bmi-534-final-project/processed_data/harth_test_fold_{fold}.pt",
-        # "pretrained_model": r"C:\Users\timot\OneDrive\Desktop\EMORY\Spring 2024\BMI-534\project-code\code\bmi-534-final-project\saved_models\ckp_last.pt",
-        "pretrained_model": r"saved_models/ckp_last.pt",
-        "experiment_log_dir": r"C:\Users\timot\OneDrive\Desktop\EMORY\Spring 2024\BMI-534\project-code\code\bmi-534-final-project",
-        "model_type": "cnn_small",
+        "fine_tune_train": f"/opt/scratchspace/todonga/bmi-534-project/processed_data/harth_train_fold_{fold}.pt",
+        "fine_tune_test": f"/opt/scratchspace/todonga/bmi-534-project/processed_data/harth_test_fold_{fold}.pt",
+        "pretrained_model": "saved_models/ckp_last.pt",
+        "experiment_log_dir": "./",
+        "model_type": f"{sys.argv[1]}",
         "arch": "daily2harth",
         "training_mode": "fine_tune_test",
-        "num_epochs": 50,
-        # "model_name": "harth_mlp_finetuned",
+        "num_epochs": 1,
+        "model_name": "harth_cnn_small_finetuned",
         "class_weights": [
             0.15076889696509452,
             0.01749342301537794,
@@ -433,14 +434,16 @@ for fold in folds:
             "Accuracy": [accuracy],
             "F1 (macro)": [f1],
             "AUC": [roc_value],
-            "model": [f'{config["arch"]}_fold_{fold}_classifier_{timestamp}'],
+            "model_type": [config["model_type"]],
+            "model": [
+                f'{config["arch"]}_fold_{fold}_classifier_{config["model_type"]}_{timestamp}'
+            ],
         }
     )
 
     df_performance = pd.concat(
         [df_performance, pd.DataFrame(new_data, index=[0])], ignore_index=True
     )
-
 
 print(df_performance)
 
