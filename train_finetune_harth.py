@@ -24,6 +24,7 @@ from model import *
 from tfc_finetune_routines import *
 import sys
 import pandas as pd
+from torchsampler import ImbalancedDatasetSampler
 
 # %%
 df_performance = pd.DataFrame()
@@ -65,7 +66,6 @@ for fold in folds:
         ],
     }
 
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     # %%
     finetune_train = torch.load(config["fine_tune_train"])
     finetune_test = torch.load(config["fine_tune_test"])
@@ -109,17 +109,19 @@ for fold in folds:
     finetune_loader = torch.utils.data.DataLoader(
         dataset=finetune_dataset_train,
         batch_size=configs.target_batch_size,
-        shuffle=True,
+        shuffle=False,
         drop_last=configs.drop_last,
         num_workers=0,
+        sampler=ImbalancedDatasetSampler(finetune_dataset_train),
     )
 
     finetune_loader_valid = torch.utils.data.DataLoader(
         dataset=finetune_dataset_valid,
         batch_size=configs.target_batch_size,
-        shuffle=True,
+        shuffle=False,
         drop_last=configs.drop_last,
         num_workers=0,
+        sampler=ImbalancedDatasetSampler(finetune_dataset_valid),
     )
 
     test_loader = torch.utils.data.DataLoader(
@@ -190,9 +192,10 @@ for fold in folds:
 
     class_weights = 1 / torch.tensor(config["class_weights"], dtype=torch.float)
     class_weights.to(device)
-    criterion = nn.CrossEntropyLoss(weight=class_weights).to(device)
+    # criterion = nn.CrossEntropyLoss(weight=class_weights).to(device)
+    criterion = nn.CrossEntropyLoss()
 
-    patience = 30
+    patience = 20
     pt_counter = 0
     max_f1 = 0
 
@@ -405,7 +408,9 @@ for fold in folds:
         y_pred=out_pred,
     )
 
-    f1 = f1_score(y_true=out_label, y_pred=out_pred, average="macro")
+    f1 = f1_score(
+        y_true=out_label, y_pred=out_pred, average="macro", zero_division=np.nan
+    )
 
     try:
         roc_value = roc_auc_score(
@@ -440,17 +445,13 @@ for fold in folds:
         [df_performance, pd.DataFrame(new_data, index=[0])], ignore_index=True
     )
 
-    df_performance.to_csv(f"tfc_finetuned_performance.csv", index=False, mode="a")
+print(df_performance)
 
-    # if config["model_name"] == "cnn_small":
-    #     df_performance.to_csv(
-    #         f"tfc_finetuned_small_cnn_performance.csv", index=False, mode="a"
-    #     )
-    # elif config["model_name"] == "cnn":
-    #     df_performance.to_csv(
-    #         f"tfc_finetuned_cnn_performance.csv", index=False, mode="a"
-    #     )
-    # else:
-    #     df_performance.to_csv(
-    #         f"tfc_finetuned_mlp_performance.csv", index=False, mode="a"
-    #     )
+file_path = f'finetuned_{config["model_type"]}_{timestamp}_performance.csv'
+if os.path.exists(file_path):
+    df_performance.to_csv(file_path, index=False, mode="a", header=None)
+else:
+    df_performance.to_csv(
+        file_path,
+        index=False,
+    )
