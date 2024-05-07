@@ -40,12 +40,13 @@ for fold in folds:
     config = {
         "fine_tune_train": f"C:/Users/timot/OneDrive/Desktop/EMORY/Spring 2024/BMI-534/project-code/code/bmi-534-final-project/processed_data/harth_train_fold_{fold}.pt",
         "fine_tune_test": f"C:/Users/timot/OneDrive/Desktop/EMORY/Spring 2024/BMI-534/project-code/code/bmi-534-final-project/processed_data/harth_test_fold_{fold}.pt",
-        "pretrained_model": r"C:\Users\timot\OneDrive\Desktop\EMORY\Spring 2024\BMI-534\project-code\code\bmi-534-final-project\saved_models\ckp_last.pt",
+        # "pretrained_model": r"C:\Users\timot\OneDrive\Desktop\EMORY\Spring 2024\BMI-534\project-code\code\bmi-534-final-project\saved_models\ckp_last.pt",
+        "pretrained_model": r"saved_models/har_ckp_last.pt",
         "experiment_log_dir": r"C:\Users\timot\OneDrive\Desktop\EMORY\Spring 2024\BMI-534\project-code\code\bmi-534-final-project",
-        "model_type": "cnn",
-        "arch": "daily2harth",
+        "model_type": "cnn_small",
+        "arch": "har2harth",
         "training_mode": "fine_tune_test",
-        "num_epochs": 200,
+        "num_epochs": 100,
         # "model_name": "harth_mlp_finetuned",
         "class_weights": [
             0.15076889696509452,
@@ -63,7 +64,6 @@ for fold in folds:
         ],
     }
 
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     # %%
     finetune_train = torch.load(config["fine_tune_train"])
     finetune_test = torch.load(config["fine_tune_test"])

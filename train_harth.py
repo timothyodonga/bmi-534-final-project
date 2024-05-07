@@ -72,6 +72,9 @@ print(k_fold_split)
 
 subjects = list(df["subject"].unique())
 
+
+f1_scores_per_class = []
+
 # %%
 for key, value in k_fold_split.items():
     print(key)
@@ -233,7 +236,8 @@ for key, value in k_fold_split.items():
     f1_per_class = f1_score(
         y_true=out_label, y_pred=out_pred, average=None, zero_division=np.nan
     )
-    print(type(f1_per_class))
+
+    f1_scores_per_class.append(f1_per_class)
 
     new_data = pd.DataFrame(
         {
@@ -241,7 +245,6 @@ for key, value in k_fold_split.items():
             "f1": [f1_value],
             "acc": [acc_value],
             "auc": [roc_value],
-            "f1_per_class": [f1_per_class.tolist()],
             "model": [f"{config['model_name']}_{key}_{config['k']}_{timestamp}.pth"],
         }
     )
@@ -252,8 +255,12 @@ for key, value in k_fold_split.items():
         [df_performance, pd.DataFrame(new_data, index=[0])], ignore_index=True
     )
 
-    break
 # %%
 df_performance.to_csv(
     f"harth_{model_name}_performance_150_{timestamp}.csv", index=False, mode="a"
+)
+
+np.save(
+    f"f1_per_class_{model_name}_performance_150_{timestamp}.npy",
+    np.array(f1_scores_per_class),
 )

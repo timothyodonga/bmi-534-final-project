@@ -40,10 +40,11 @@ for fold in folds:
     config = {
         "fine_tune_train": f"C:/Users/timot/OneDrive/Desktop/EMORY/Spring 2024/BMI-534/project-code/code/bmi-534-final-project/processed_data/harth_train_fold_{fold}.pt",
         "fine_tune_test": f"C:/Users/timot/OneDrive/Desktop/EMORY/Spring 2024/BMI-534/project-code/code/bmi-534-final-project/processed_data/harth_test_fold_{fold}.pt",
-        "pretrained_model": r"C:\Users\timot\OneDrive\Desktop\EMORY\Spring 2024\BMI-534\project-code\code\bmi-534-final-project\saved_models\ckp_last.pt",
+        # "fine_tune_test": f"experiments_logs/finetunemodel/har2harth_cnn_small_tfc_fold_{fold}_model_20240506_211941.pt",
+        "pretrained_model": r"C:\Users\timot\OneDrive\Desktop\EMORY\Spring 2024\BMI-534\project-code\code\bmi-534-final-project\saved_models\har_ckp_last.pt",
         "experiment_log_dir": r"C:\Users\timot\OneDrive\Desktop\EMORY\Spring 2024\BMI-534\project-code\code\bmi-534-final-project",
         "model_type": "cnn_small",
-        "arch": "daily2harth",
+        "arch": "har2harth",
         "training_mode": "fine_tune_test",
         "num_epochs": 1,
         "model_name": "harth_mlp_finetuned",
@@ -61,23 +62,37 @@ for fold in folds:
             0.0047191559762414905,
             0.00021697268856282715,
         ],
+        # "saved_models_classifier": {
+        #     "0": r"daily2harth_cnn_small_fold_0_classifier_20240429_145525.pt",
+        #     "1": r"daily2harth_cnn_small_fold_1_classifier_20240429_145739.pt",
+        #     "2": r"daily2harth_cnn_small_fold_2_classifier_20240429_145943.pt",
+        #     "3": r"daily2harth_cnn_small_fold_3_classifier_20240429_150159.pt",
+        #     "4": r"daily2harth_cnn_small_fold_4_classifier_20240429_150415.pt",
+        # },
         "saved_models_classifier": {
-            "0": r"daily2harth_cnn_small_fold_0_classifier_20240429_145525.pt",
-            "1": r"daily2harth_cnn_small_fold_1_classifier_20240429_145739.pt",
-            "2": r"daily2harth_cnn_small_fold_2_classifier_20240429_145943.pt",
-            "3": r"daily2harth_cnn_small_fold_3_classifier_20240429_150159.pt",
-            "4": r"daily2harth_cnn_small_fold_4_classifier_20240429_150415.pt",
+            "0": r"experiments_logs\finetunemodel\har2harth_cnn_small_fold_0_classifier_20240506_211941.pt",
+            "1": r"experiments_logs\finetunemodel\har2harth_cnn_small_fold_1_classifier_20240506_213521.pt",
+            "2": r"experiments_logs\finetunemodel\har2harth_cnn_small_fold_2_classifier_20240506_214913.pt",
+            "3": r"experiments_logs\finetunemodel\har2harth_cnn_small_fold_3_classifier_20240506_220818.pt",
+            "4": r"experiments_logs\finetunemodel\har2harth_cnn_small_fold_4_classifier_20240506_222314.pt",
         },
+        # "saved_models_tfc": {
+        #     "0": r"daily2harth_cnn_small_tfc_fold_0_model_20240429_145525.pt",
+        #     "1": r"daily2harth_cnn_small_tfc_fold_1_model_20240429_145739.pt",
+        #     "2": r"daily2harth_cnn_small_tfc_fold_2_model_20240429_145943.pt",
+        #     "3": r"daily2harth_cnn_small_tfc_fold_3_model_20240429_150159.pt",
+        #     "4": r"daily2harth_cnn_small_tfc_fold_4_model_20240429_150415.pt",
+        # },
         "saved_models_tfc": {
-            "0": r"daily2harth_cnn_small_tfc_fold_0_model_20240429_145525.pt",
-            "1": r"daily2harth_cnn_small_tfc_fold_1_model_20240429_145739.pt",
-            "2": r"daily2harth_cnn_small_tfc_fold_2_model_20240429_145943.pt",
-            "3": r"daily2harth_cnn_small_tfc_fold_3_model_20240429_150159.pt",
-            "4": r"daily2harth_cnn_small_tfc_fold_4_model_20240429_150415.pt",
+            "0": r"experiments_logs\finetunemodel\har2harth_cnn_small_tfc_fold_0_model_20240506_211941.pt",
+            "1": r"experiments_logs\finetunemodel\har2harth_cnn_small_tfc_fold_1_model_20240506_213521.pt",
+            "2": r"experiments_logs\finetunemodel\har2harth_cnn_small_tfc_fold_2_model_20240506_214913.pt",
+            "3": r"experiments_logs\finetunemodel\har2harth_cnn_small_tfc_fold_3_model_20240506_220818.pt",
+            "4": r"experiments_logs\finetunemodel\har2harth_cnn_small_tfc_fold_4_model_20240506_222314.pt",
         },
     }
 
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    # timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     # %%
     finetune_train = torch.load(config["fine_tune_train"])
     finetune_test = torch.load(config["fine_tune_test"])
@@ -237,8 +252,8 @@ for fold in folds:
 
 print("Printing the performance")
 print(df_performance)
-# print(df_performance.mean())
-# print(df_performance.std())
+print(df_performance.mean())
+print(df_performance.std())
 
 
 # df_performance.to_csv("tfc_finetuned_cnn_05052024.csv", index=False)
