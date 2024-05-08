@@ -2,6 +2,7 @@
 import pandas as pd
 import os
 from utils import opp_sliding_windowX
+from sklearn.decomposition import PCA
 
 
 # TODO - Need to figure out if it is necessary to normalize the data
@@ -17,8 +18,8 @@ os.listdir(data_path)
 df = pd.DataFrame()
 csv_files = [file for file in os.listdir(data_path) if file.endswith(".csv")]
 
-max_values_harth = pd.read_csv("harth_max_values.csv").to_numpy()
-min_values_harth = pd.read_csv("harth_min_values.csv").to_numpy()
+max_values_harth = pd.read_csv("csv_files/harth_max_values.csv").to_numpy()
+min_values_harth = pd.read_csv("csv_files/harth_min_values.csv").to_numpy()
 
 # %%
 for file in csv_files:
@@ -43,17 +44,15 @@ for file in csv_files:
     diffs = max_values_harth - min_values_harth
     features = (features - min_values_harth) / diffs
 
+    pca = PCA(n_components=1)
+    pca.fit(features)
+    print("Printing the amount of variance explained by first component")
+    print(pca.explained_variance_ratio_)
+
+    features_reduced = pca.fit_transform(features)
+
     features = opp_sliding_windowX(
-        df_[
-            [
-                "back_x",
-                "back_y",
-                "back_z",
-                "thigh_x",
-                "thigh_y",
-                "thigh_z",
-            ]
-        ].to_numpy(),
+        features_reduced,
         sliding_window_length,
         sliding_window_step,
     )
@@ -82,6 +81,6 @@ for file in csv_files:
     print(f"Finished processing: {file}")
     df = pd.concat([df, data], ignore_index=True)
 # %%
-df.to_csv("harth_preprocessed_data_206_window.csv", index=False)
+df.to_csv("harth_preprocessed_data_pca_206_window.csv", index=False)
 
 # %%

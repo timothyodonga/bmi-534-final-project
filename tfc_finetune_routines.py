@@ -28,6 +28,7 @@ def model_finetune(
     criterion,
     classifier=None,
     classifier_optimizer=None,
+    tfc_type="transformer",
 ):
     model.train()
     classifier.train()
@@ -35,10 +36,31 @@ def model_finetune(
     # criterion = nn.CrossEntropyLoss()
 
     for data, labels, aug1, data_f, aug1_f in val_dl:
-        data, labels = data.float().to(device), labels.long().to(device)
-        data_f = data_f.float().to(device)
-        aug1 = aug1.float().to(device)
-        aug1_f = aug1_f.float().to(device)
+        # data, labels = data.float().to(device), labels.long().to(device)
+        # data_f = data_f.float().to(device)
+        # aug1 = aug1.float().to(device)
+        # aug1_f = aug1_f.float().to(device)
+        if tfc_type == "transformer":
+            data, labels = data.float().to(device), labels.long().to(
+                device
+            )  # data: [128, 1, 178], labels: [128]
+            aug1 = aug1.float().to(device)  # aug1 = aug2 : [128, 1, 178]
+            data_f, aug1_f = data_f.float().to(device), aug1_f.float().to(
+                device
+            )  # aug1 = aug2 : [128, 1, 178]
+        else:
+            data = (
+                data.float().transpose(-1, -2).unsqueeze(1).to(device)
+            )  #  data: [128, 1, 178]
+            aug1 = (
+                aug1.float().transpose(-1, -2).unsqueeze(1).to(device)
+            )  # aug1 = aug2 : [128, 1, 178]
+            data_f = data_f.float().transpose(-1, -2).unsqueeze(1).to(device)
+            aug1_f = (
+                aug1_f.float().transpose(-1, -2).unsqueeze(1).to(device)
+            )  # aug1 = aug2 : [128, 1, 178]
+
+            labels = labels.long().to(device)  # labels: [128]
 
         """if random initialization:"""
         model_optimizer.zero_grad()  # The gradients are zero, but the parameters are still randomly initialized.
@@ -97,6 +119,7 @@ def model_finetune_cnn(
     criterion,
     classifier=None,
     classifier_optimizer=None,
+    tfc_type="transformer",
 ):
     # global labels, pred_numpy, fea_concat_flat
     model.train()
@@ -105,10 +128,31 @@ def model_finetune_cnn(
     # criterion = nn.CrossEntropyLoss()
 
     for data, labels, aug1, data_f, aug1_f in val_dl:
-        data, labels = data.float().to(device), labels.long().to(device)
-        data_f = data_f.float().to(device)
-        aug1 = aug1.float().to(device)
-        aug1_f = aug1_f.float().to(device)
+        # data, labels = data.float().to(device), labels.long().to(device)
+        # data_f = data_f.float().to(device)
+        # aug1 = aug1.float().to(device)
+        # aug1_f = aug1_f.float().to(device)
+        if tfc_type == "transformer":
+            data, labels = data.float().to(device), labels.long().to(
+                device
+            )  # data: [128, 1, 178], labels: [128]
+            aug1 = aug1.float().to(device)  # aug1 = aug2 : [128, 1, 178]
+            data_f, aug1_f = data_f.float().to(device), aug1_f.float().to(
+                device
+            )  # aug1 = aug2 : [128, 1, 178]
+        else:
+            data = (
+                data.float().transpose(-1, -2).unsqueeze(1).to(device)
+            )  #  data: [128, 1, 178]
+            aug1 = (
+                aug1.float().transpose(-1, -2).unsqueeze(1).to(device)
+            )  # aug1 = aug2 : [128, 1, 178]
+            data_f = data_f.float().transpose(-1, -2).unsqueeze(1).to(device)
+            aug1_f = (
+                aug1_f.float().transpose(-1, -2).unsqueeze(1).to(device)
+            )  # aug1 = aug2 : [128, 1, 178]
+
+            labels = labels.long().to(device)  # labels: [128]
 
         """if random initialization:"""
         model_optimizer.zero_grad()  # The gradients are zero, but the parameters are still randomly initialized.
@@ -167,6 +211,7 @@ def model_test_cnn(
     criterion,
     classifier=None,
     classifier_optimizer=None,
+    tfc_type="transformer",
 ):
     model.eval()
     classifier.eval()
@@ -188,8 +233,13 @@ def model_test_cnn(
 
     with torch.no_grad():
         for i, (data, labels, _, data_f, _) in enumerate(test_dl):
-            data, labels = data.float().to(device), labels.long().to(device)
-            data_f = data_f.float().to(device)
+            if tfc_type == "transformer":
+                data, labels = data.float().to(device), labels.long().to(device)
+                data_f = data_f.float().to(device)
+            else:
+                data = data.float().transpose(-1, -2).unsqueeze(1).to(device)
+                data_f = data_f.float().transpose(-1, -2).unsqueeze(1).to(device)
+                labels = labels.long().to(device)
 
             """Add supervised classifier: 1) it's unique to finetuning. 
             2) this classifier will also be used in test"""
@@ -245,6 +295,7 @@ def model_test(
     criterion,
     classifier=None,
     classifier_optimizer=None,
+    tfc_type="transformer",
 ):
     model.eval()
     classifier.eval()
@@ -266,8 +317,14 @@ def model_test(
 
     with torch.no_grad():
         for i, (data, labels, _, data_f, _) in enumerate(test_dl):
-            data, labels = data.float().to(device), labels.long().to(device)
-            data_f = data_f.float().to(device)
+
+            if tfc_type == "transformer":
+                data, labels = data.float().to(device), labels.long().to(device)
+                data_f = data_f.float().to(device)
+            else:
+                data = data.float().transpose(-1, -2).unsqueeze(1).to(device)
+                data_f = data_f.float().transpose(-1, -2).unsqueeze(1).to(device)
+                labels = labels.long().to(device)
 
             """Add supervised classifier: 1) it's unique to finetuning. 
             2) this classifier will also be used in test"""

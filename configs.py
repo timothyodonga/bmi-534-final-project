@@ -5,7 +5,7 @@ class Config(object):
         # Input channels are 3 for Daily
         # For HARTH they are 6
         # Number of classes for Harth are 12
-        self.input_channels = 9  # 9
+        self.input_channels = 3  # 9  # 9 There are 9 channels in one
         self.kernel_size = 8
         self.stride = 1
         self.final_out_channels = 128
@@ -15,16 +15,16 @@ class Config(object):
         self.features_len = 18
 
         # training configs
-        self.num_epoch = 200
+        self.num_epoch = 3
 
         # optimizer parameters
         self.beta1 = 0.9
         self.beta2 = 0.99
-        self.lr = 3e-4
+        self.lr = 3e-3
 
         # data parameters
         self.drop_last = True
-        self.batch_size = 128
+        self.batch_size = 16  # 128
 
         self.Context_Cont = Context_Cont_configs()
         self.TC = TC()
@@ -33,12 +33,14 @@ class Config(object):
         """New hyperparameters"""
         self.TSlength_aligned = 206
         self.lr_f = self.lr
-        self.target_batch_size = 128  #  84
+        self.target_batch_size = 16  # 128  #  84
         self.increased_dim = 1
         self.final_out_channels = 128
         self.num_classes_target = 12  # This is the bug in their code
         self.features_len_f = self.features_len
         self.CNNoutput_channel = 28  #  104
+
+        self.tfc_type = "cnn"
 
 
 class augmentations(object):

@@ -41,15 +41,23 @@ for fold in folds:
     # configs.num_epoch = 50
 
     config = {
-        "fine_tune_train": f"/opt/scratchspace/todonga/bmi-534-project/processed_data/harth_train_fold_{fold}.pt",
-        "fine_tune_test": f"/opt/scratchspace/todonga/bmi-534-project/processed_data/harth_test_fold_{fold}.pt",
-        "pretrained_model": "saved_models/ckp_last.pt",
+        # "fine_tune_train": f"/opt/scratchspace/todonga/bmi-534-project/processed_data/harth_train_fold_{fold}.pt",
+        # "fine_tune_test": f"/opt/scratchspace/todonga/bmi-534-project/processed_data/harth_test_fold_{fold}.pt",
+        # "pretrained_model": "saved_models/ckp_last.pt",
         "experiment_log_dir": "./",
         "model_type": f"{sys.argv[1]}",
+        "fine_tune_train": f"C:/Users/timot/OneDrive/Desktop/EMORY/Spring 2024/BMI-534/project-code/code/bmi-534-final-project/processed_data/harth_train_fold_{fold}.pt",
+        "fine_tune_test": f"C:/Users/timot/OneDrive/Desktop/EMORY/Spring 2024/BMI-534/project-code/code/bmi-534-final-project/processed_data/harth_test_fold_{fold}.pt",
+        # "pretrained_model": r"C:\Users\timot\OneDrive\Desktop\EMORY\Spring 2024\BMI-534\project-code\code\bmi-534-final-project\saved_models\ckp_last.pt",
+        # "fine_tune_train": f"harth_train__pca_fold_{fold}.pt",
+        # "fine_tune_test": f"harth_test_pca_fold_{fold}.pt",
+        "pretrained_model": r"saved_models/cnn_ckp_last.pt",
+        "experiment_log_dir": r"C:\Users\timot\OneDrive\Desktop\EMORY\Spring 2024\BMI-534\project-code\code\bmi-534-final-project",
+        "model_type": "cnn_small",
         "arch": "daily2harth",
         "training_mode": "fine_tune_test",
-        "num_epochs": 1,
-        "model_name": "harth_cnn_small_finetuned",
+        "num_epochs": 50,
+        # "model_name": "harth_mlp_finetuned",
         "class_weights": [
             0.15076889696509452,
             0.01749342301537794,
@@ -64,6 +72,7 @@ for fold in folds:
             0.0047191559762414905,
             0.00021697268856282715,
         ],
+        "tfc_type": "cnn",
     }
 
     # %%
@@ -144,7 +153,11 @@ for fold in folds:
         device = torch.device("cpu")
     print("We are using %s now." % device)
 
-    TFC_model = TFC(configs)
+    if config["tfc_type"] == "transformer":
+        TFC_model = TFC(configs)
+    else:
+        TFC_model = TFCCNN(configs)
+
     print("Loading the pre-trained model")
     TFC_model.load_state_dict(torch.load(config["pretrained_model"]))
     TFC_model = TFC_model.to(device)
@@ -213,6 +226,7 @@ for fold in folds:
                 criterion=criterion,
                 classifier=classifier,
                 classifier_optimizer=classifier_optimizer,
+                tfc_type=config["tfc_type"],
             )
 
             (valid_loss, out_batch, out_label, out_pred, out_probabilities) = (
@@ -225,6 +239,7 @@ for fold in folds:
                     criterion=criterion,
                     classifier=classifier,
                     classifier_optimizer=classifier_optimizer,
+                    tfc_type=config["tfc_type"],
                 )
             )
         else:
@@ -238,6 +253,7 @@ for fold in folds:
                 criterion=criterion,
                 classifier=classifier,
                 classifier_optimizer=classifier_optimizer,
+                tfc_type=config["tfc_type"],
             )
 
             (valid_loss, out_batch, out_label, out_pred, out_probabilities) = (
@@ -250,6 +266,7 @@ for fold in folds:
                     criterion=criterion,
                     classifier=classifier,
                     classifier_optimizer=classifier_optimizer,
+                    tfc_type=config["tfc_type"],
                 )
             )
 
@@ -283,7 +300,7 @@ for fold in folds:
                     TFC_model.state_dict(),
                     "experiments_logs/finetunemodel/"
                     + config["arch"]
-                    + f"_cnn_small_tfc_fold_{fold}_model_{timestamp}.pt",
+                    + f"_{config['tfc_type']}_{config['model_type']}_fold_{fold}_model_{timestamp}.pt",
                 )
                 torch.save(
                     classifier.state_dict(),
@@ -296,7 +313,7 @@ for fold in folds:
                     TFC_model.state_dict(),
                     "experiments_logs/finetunemodel/"
                     + config["arch"]
-                    + f"_cnn_tfc_fold_{fold}_model_{timestamp}.pt",
+                    + f"_{config['tfc_type']}_{config['model_type']}_fold_{fold}_model_{timestamp}.pt",
                 )
                 torch.save(
                     classifier.state_dict(),
@@ -309,7 +326,7 @@ for fold in folds:
                     TFC_model.state_dict(),
                     "experiments_logs/finetunemodel/"
                     + config["arch"]
-                    + f"_fold_{fold}_model_{timestamp}.pt",
+                    + f"_{config['tfc_type']}_{config['model_type']}_fold_{fold}_model_{timestamp}.pt",
                 )
                 torch.save(
                     classifier.state_dict(),
@@ -336,7 +353,7 @@ for fold in folds:
             torch.load(
                 "experiments_logs/finetunemodel/"
                 + config["arch"]
-                + f"_cnn_tfc_fold_{fold}_model_{timestamp}.pt"
+                + f"_{config['tfc_type']}_{config['model_type']}_fold_{fold}_model_{timestamp}.pt",
             )
         )
 
@@ -352,7 +369,7 @@ for fold in folds:
             torch.load(
                 "experiments_logs/finetunemodel/"
                 + config["arch"]
-                + f"_cnn_small_tfc_fold_{fold}_model_{timestamp}.pt"
+                + f"_{config['tfc_type']}_{config['model_type']}_fold_{fold}_model_{timestamp}.pt",
             )
         )
 
@@ -368,7 +385,7 @@ for fold in folds:
             torch.load(
                 "experiments_logs/finetunemodel/"
                 + config["arch"]
-                + f"_fold_{fold}_model_{timestamp}.pt"
+                + f"_{config['tfc_type']}_{config['model_type']}_fold_{fold}_model_{timestamp}.pt",
             )
         )
 
@@ -390,6 +407,7 @@ for fold in folds:
             criterion=criterion,
             classifier=classifier,
             classifier_optimizer=classifier_optimizer,
+            tfc_type=config["tfc_type"],
         )
     else:
         test_loss, out_batch, out_label, out_pred, out_probabilties_ = model_test(
@@ -401,6 +419,7 @@ for fold in folds:
             criterion=criterion,
             classifier=classifier,
             classifier_optimizer=classifier_optimizer,
+            tfc_type=config["tfc_type"],
         )
 
     accuracy = accuracy_score(

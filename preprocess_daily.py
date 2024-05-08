@@ -6,6 +6,8 @@ import torch
 # from config import config_defog
 from utils import opp_sliding_windowX
 import os
+from sklearn.decomposition import PCA
+
 
 # TODO - Make sure that the processed data conforms to the shape expected
 # Num of samples , Num channels, Ts value - for now use a Ts value of 206 which is derived from the TF-C code
@@ -43,41 +45,52 @@ subj_files = [file for file in os.listdir(dir)]
 
 # %%
 
-for i in range(len(subj_files)):
-    file = subj_files[i]
-    print(file)
-    df_ = pd.read_parquet(os.path.join(dir, file))
-    # print(df_.head())
-    df = pd.concat([df, df_], ignore_index=True)
+# for i in range(len(subj_files)):
+#     file = subj_files[i]
+#     print(file)
+#     df_ = pd.read_parquet(os.path.join(dir, file))
+#     # print(df_.head())
+#     df = pd.concat([df, df_], ignore_index=True)
 
-    # TODO - Remove this in the code when the full code actually works
-    if i == 4:
-        break
-    # print(df.head())
+#     # TODO - Remove this in the code when the full code actually works
+#     if i == 4:
+#         break
+#     # print(df.head())
 # %%
-min_values = df.min()
-# %%
-min_values_df_sample = pd.DataFrame(min_values).T
-min_values_df_sample[["AccV", "AccML", "AccAP"]].to_csv(
-    f"{config['save_path']}/daily_living_min_values_sample.csv", index=False
-)
-# %%
-max_values = df.max()
-# %%
-max_values_df_sample = pd.DataFrame(max_values).T
-max_values_df_sample[["AccV", "AccML", "AccAP"]].to_csv(
-    f"{config['save_path']}/daily_living_max_values_sample.csv", index=False
-)
+# min_values = df.min()
+# # %%
+# min_values_df_sample = pd.DataFrame(min_values).T
+# min_values_df_sample[["AccV", "AccML", "AccAP"]].to_csv(
+#     f"{config['save_path']}/daily_living_min_values_sample.csv", index=False
+# )
+# # %%
+# max_values = df.max()
+# # %%
+# max_values_df_sample = pd.DataFrame(max_values).T
+# max_values_df_sample[["AccV", "AccML", "AccAP"]].to_csv(
+#     f"{config['save_path']}/daily_living_max_values_sample.csv", index=False
+# )
 
 # %%
 # Now to segment the data into 206 time chunks. Just do it for 5 subjects
 
+# max_values_daily = pd.read_csv(
+#     f"{config['save_path']}/daily_living_max_values_sample.csv"
+# ).to_numpy()
+# min_values_daily = pd.read_csv(
+#     f"{config['save_path']}/daily_living_min_values_sample.csv"
+# ).to_numpy()
+
+
 max_values_daily = pd.read_csv(
-    f"{config['save_path']}/daily_living_max_values_sample.csv"
+    f"csv_files/daily_living_max_values_sample.csv"
 ).to_numpy()
 min_values_daily = pd.read_csv(
-    f"{config['save_path']}/daily_living_min_values_sample.csv"
+    f"csv_files/daily_living_min_values_sample.csv"
 ).to_numpy()
+
+
+print("Finished reading the min and max values")
 
 # %%
 sliding_window_length = 206
@@ -96,8 +109,14 @@ for i in range(len(subj_files)):
     diffs = max_values_daily - min_values_daily
     features = (features - min_values_daily) / diffs
 
+    pca = PCA(n_components=1)
+    pca.fit(features)
+    print("Printing the amount of variance explained by first component")
+    print(pca.explained_variance_ratio_)
+    features_reduced = pca.fit_transform(features)
+
     features = opp_sliding_windowX(
-        features,
+        features_reduced,
         sliding_window_length,
         sliding_window_step,
     )
@@ -127,8 +146,8 @@ train_tensor = {
 
 # %%
 if config["sample"]:
-    torch.save(train_tensor, f"{config['save_path']}/daily_living_sample.pt")
+    torch.save(train_tensor, f"{config['save_path']}/daily_living_pca_sample.pt")
 else:
-    torch.save(train_tensor, f"{config['save_path']}/daily_living.pt")
+    torch.save(train_tensor, f"{config['save_path']}/daily_living_pca.pt")
 # %%
 # np.random.randint(0,1,size = 10)
