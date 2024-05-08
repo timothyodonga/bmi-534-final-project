@@ -15,9 +15,10 @@ from model import *
 config = {
     "pretrain_data": r"C:\Users\timot\OneDrive\Desktop\EMORY\Spring 2024\BMI-534\project-code\code\bmi-534-final-project\saved_models\daily_living_sample.pt",
     "subset": True,
-    "batch_size": 128,
+    "batch_size": 16,
     "training_mode": "pre_train",
     "experiment_log_dir": r"C:\Users\timot\OneDrive\Desktop\EMORY\Spring 2024\BMI-534\project-code\code\bmi-534-final-project",
+    "tfc_type": "cnn",
 }
 
 # %%
@@ -55,10 +56,18 @@ if with_gpu:
 else:
     device = torch.device("cpu")
 print("We are using %s now." % device)
-TFC_model = TFC(configs).to(device)
 
+# TFC_model = TFC(configs).to(device)
+if config["tfc_type"] == "transformer":
+    TFC_model = TFC(configs).to(device)
+else:
+    TFC_model = TFCCNN(configs).to(device)
 
 # %%
+print("Printing the TFC model")
+print(TFC_model)
+
+
 model_optimizer = torch.optim.Adam(
     TFC_model.parameters(),
     lr=configs.lr,
@@ -85,26 +94,20 @@ for epoch in range(1, configs.num_epoch + 1):
         config=configs,
         device=device,
         training_mode=training_mode,
+        tfc_type=config["tfc_type"],
     )
     print(f"\nPre-training Epoch : {epoch}", f"Train Loss : {train_loss:.4f}")
 
     if train_loss < gtrain_loss:
         os.makedirs(os.path.join(experiment_log_dir, "saved_models"), exist_ok=True)
-        # chkpoint = {"model_state_dict": TFC_model.state_dict()}
-        # torch.save(
-        #     chkpoint, os.path.join(experiment_log_dir, "saved_models", f"ckp_last.pt")
-        # )
-        # print(
-        #     "Pretrained model is stored at folder:{}".format(
-        #         experiment_log_dir + "saved_models" + "ckp_last.pt"
-        #     )
-        # )
 
         torch.save(
             TFC_model.state_dict(),
-            os.path.join(experiment_log_dir, "saved_models", f"ckp_last.pt"),
+            os.path.join(
+                experiment_log_dir, "saved_models", f"{config['tfc_type']}_ckp_last.pt"
+            ),
         )
 
-        print("TFC loss dropped model saved")
+        print("*** TFC loss dropped model saved")
 
         gtrain_loss = train_loss

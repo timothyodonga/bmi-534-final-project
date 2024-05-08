@@ -216,6 +216,7 @@ def model_pretrain(
     config,
     device,
     training_mode,
+    tfc_type="transformer",
 ):
     total_loss = []
     model.train()
@@ -225,13 +226,27 @@ def model_pretrain(
     model_optimizer.zero_grad()
 
     for batch_idx, (data, labels, aug1, data_f, aug1_f) in enumerate(train_loader):
-        data, labels = data.float().to(device), labels.long().to(
-            device
-        )  # data: [128, 1, 178], labels: [128]
-        aug1 = aug1.float().to(device)  # aug1 = aug2 : [128, 1, 178]
-        data_f, aug1_f = data_f.float().to(device), aug1_f.float().to(
-            device
-        )  # aug1 = aug2 : [128, 1, 178]
+        if tfc_type == "transformer":
+            data, labels = data.float().to(device), labels.long().to(
+                device
+            )  # data: [128, 1, 178], labels: [128]
+            aug1 = aug1.float().to(device)  # aug1 = aug2 : [128, 1, 178]
+            data_f, aug1_f = data_f.float().to(device), aug1_f.float().to(
+                device
+            )  # aug1 = aug2 : [128, 1, 178]
+        else:
+            data = (
+                data.float().transpose(-1, -2).unsqueeze(1).to(device)
+            )  #  data: [128, 1, 178]
+            aug1 = (
+                aug1.float().transpose(-1, -2).unsqueeze(1).to(device)
+            )  # aug1 = aug2 : [128, 1, 178]
+            data_f = data_f.float().transpose(-1, -2).unsqueeze(1).to(device)
+            aug1_f = (
+                aug1_f.float().transpose(-1, -2).unsqueeze(1).to(device)
+            )  # aug1 = aug2 : [128, 1, 178]
+
+            labels = labels.long().to(device)  # labels: [128]
 
         """Produce embeddings"""
         h_t, z_t, h_f, z_f = model(data, data_f)
@@ -285,6 +300,7 @@ def model_finetune(
     training_mode,
     classifier=None,
     classifier_optimizer=None,
+    tfc_type="transformer",
 ):
     global labels, pred_numpy, fea_concat_flat
     model.train()
@@ -302,10 +318,31 @@ def model_finetune(
 
     for data, labels, aug1, data_f, aug1_f in val_dl:
         # print('Fine-tuning: {} of target samples'.format(labels.shape[0]))
-        data, labels = data.float().to(device), labels.long().to(device)
-        data_f = data_f.float().to(device)
-        aug1 = aug1.float().to(device)
-        aug1_f = aug1_f.float().to(device)
+        # data, labels = data.float().to(device), labels.long().to(device)
+        # data_f = data_f.float().to(device)
+        # aug1 = aug1.float().to(device)
+        # aug1_f = aug1_f.float().to(device)
+        if tfc_type == "transformer":
+            data, labels = data.float().to(device), labels.long().to(
+                device
+            )  # data: [128, 1, 178], labels: [128]
+            aug1 = aug1.float().to(device)  # aug1 = aug2 : [128, 1, 178]
+            data_f, aug1_f = data_f.float().to(device), aug1_f.float().to(
+                device
+            )  # aug1 = aug2 : [128, 1, 178]
+        else:
+            data = (
+                data.float().transpose(-1, -2).unsqueeze(1).to(device)
+            )  #  data: [128, 1, 178]
+            aug1 = (
+                aug1.float().transpose(-1, -2).unsqueeze(1).to(device)
+            )  # aug1 = aug2 : [128, 1, 178]
+            data_f = data_f.float().transpose(-1, -2).unsqueeze(1).to(device)
+            aug1_f = (
+                aug1_f.float().transpose(-1, -2).unsqueeze(1).to(device)
+            )  # aug1 = aug2 : [128, 1, 178]
+
+            labels = labels.long().to(device)  # labels: [128]
 
         """if random initialization:"""
         model_optimizer.zero_grad()  # The gradients are zero, but the parameters are still randomly initialized.

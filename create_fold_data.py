@@ -23,7 +23,7 @@ from routines.test import test_model
 import kfolds
 
 # %%
-data = r"C:\Users\timot\OneDrive\Desktop\EMORY\Spring 2024\BMI-534\project-code\code\bmi-534-final-project\harth_preprocessed_data_206_window.csv"
+data = r"C:\Users\timot\OneDrive\Desktop\EMORY\Spring 2024\BMI-534\project-code\code\bmi-534-final-project\harth_preprocessed_data_pca_206_window.csv"
 # %%
 df = pd.read_csv(data)
 
@@ -90,17 +90,22 @@ for key, value in k_fold_split.items():
     features_test = np.array(df_test["features"].tolist())
     label_test = np.array(df_test["label_"].tolist())
 
+    print(features_train.shape)
+
     train_tensor = {
-        "samples": torch.as_tensor(features_train).permute(0, 2, 1).float(),
+        "samples": torch.as_tensor(features_train)
+        .unsqueeze(2)
+        .permute(0, 2, 1)
+        .float(),
         "labels": torch.as_tensor(label_train).float(),
     }
 
     test_tensor = {
-        "samples": torch.as_tensor(features_test).permute(0, 2, 1).float(),
+        "samples": torch.as_tensor(features_test).unsqueeze(2).permute(0, 2, 1).float(),
         "labels": torch.as_tensor(label_test).float(),
     }
 
-    torch.save(train_tensor, f"harth_train_fold_{key}.pt")
-    torch.save(test_tensor, f"harth_test_fold_{key}.pt")
+    torch.save(train_tensor, f"harth_train__pca_fold_{key}.pt")
+    torch.save(test_tensor, f"harth_test_pca_fold_{key}.pt")
 
 # %%

@@ -70,13 +70,17 @@ class Load_Dataset(Dataset):
             X_train = X_train.permute(0, 2, 1)
 
         """Align the TS length between source and target datasets"""
-        X_train = X_train[
-            :, :1, : int(config.TSlength_aligned)
-        ]  # take the first 178 samples
+        if config.tfc_type == "transformer":
+            X_train = X_train[:, :1, : int(config.TSlength_aligned)]
+        else:
+            X_train = X_train[
+                :, : int(config.input_channels), : int(config.TSlength_aligned)
+            ]
 
         """Subset for debugging"""
         if subset == True:
-            subset_size = target_dataset_size * 10  # 30 #7 # 60*1
+            # subset_size = target_dataset_size * 10  # 30 #7 # 60*1
+            subset_size = 2048
             """if the dimension is larger than 178, take the first 178 dimensions. If multiple channels, take the first channel"""
             X_train = X_train[:subset_size]
             y_train = y_train[:subset_size]
@@ -168,13 +172,20 @@ class Load_DatasetTwo(Dataset):
             X_train = X_train.permute(0, 2, 1)
 
         """Align the TS length between source and target datasets"""
-        X_train = X_train[
-            :, :1, : int(config.TSlength_aligned)
-        ]  # take the first 178 samples
+        # X_train = X_train[
+        #     :, :, : int(config.TSlength_aligned)
+        # ]  # take the first 178 samples
+        if config.tfc_type == "transformer":
+            X_train = X_train[:, :1, : int(config.TSlength_aligned)]
+        else:
+            X_train = X_train[
+                :, : int(config.input_channels), : int(config.TSlength_aligned)
+            ]
 
         """Subset for debugging"""
         if subset == True:
-            subset_size = target_dataset_size * 10  # 30 #7 # 60*1
+            # subset_size = target_dataset_size * 10  # 30 #7 # 60*1
+            subset_size = 2048
             """if the dimension is larger than 178, take the first 178 dimensions. If multiple channels, take the first channel"""
             X_train = X_train[:subset_size]
             y_train = y_train[:subset_size]

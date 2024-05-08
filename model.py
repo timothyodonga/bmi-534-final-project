@@ -237,6 +237,80 @@ class TFC(nn.Module):
         return h_time, z_time, h_freq, z_freq
 
 
+class TFCCNN(nn.Module):
+    def __init__(self, configs, num_filters=64, filter_size=5):
+        super(TFCCNN, self).__init__()
+
+        self.cnn_encoder_t = nn.Sequential(
+            nn.Conv2d(
+                in_channels=1, out_channels=num_filters, kernel_size=(filter_size, 1)
+            ),
+            nn.BatchNorm2d(num_filters),
+            nn.ReLU(),
+            nn.Conv2d(
+                in_channels=num_filters,
+                out_channels=num_filters,
+                kernel_size=(filter_size, 1),
+            ),
+            nn.BatchNorm2d(num_filters),
+            nn.ReLU(),
+        )
+
+        self.projector_t = nn.Sequential(
+            nn.Linear(64 * 198 * configs.input_channels, 256),
+            nn.BatchNorm1d(256),
+            nn.ReLU(),
+            nn.Linear(256, 128),
+        )
+
+        self.cnn_encoder_f = nn.Sequential(
+            nn.Conv2d(
+                in_channels=1, out_channels=num_filters, kernel_size=(filter_size, 1)
+            ),
+            nn.BatchNorm2d(num_filters),
+            nn.ReLU(),
+            nn.Conv2d(
+                in_channels=num_filters,
+                out_channels=num_filters,
+                kernel_size=(filter_size, 1),
+            ),
+            nn.BatchNorm2d(num_filters),
+            nn.ReLU(),
+        )
+
+        self.projector_f = nn.Sequential(
+            nn.Linear(64 * 198 * configs.input_channels, 256),
+            nn.BatchNorm1d(256),
+            nn.ReLU(),
+            nn.Linear(256, 128),
+        )
+
+    def forward(self, x_in_t, x_in_f):
+        """Use Transformer"""
+        # print("Here")
+        # print(x_in_t.shape)
+        x = self.cnn_encoder_t(x_in_t)
+        # print("Output of cnn encoder")
+        # print(x.shape)
+        h_time = x.reshape(x.shape[0], -1)
+        # print("Printing h_time")
+        # print(h_time.shape)
+
+        """Cross-space projector"""
+        z_time = self.projector_t(h_time)
+        # print(f"z_time: {z_time}")
+
+        """Frequency-based contrastive encoder"""
+
+        f = self.cnn_encoder_f(x_in_f)
+        h_freq = f.reshape(f.shape[0], -1)
+
+        """Cross-space projector"""
+        z_freq = self.projector_f(h_freq)
+
+        return h_time, z_time, h_freq, z_freq
+
+
 """Downstream classifier only used in finetuning"""
 
 
