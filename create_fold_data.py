@@ -23,7 +23,11 @@ from routines.test import test_model
 import kfolds
 
 # %%
+<<<<<<< HEAD
 data = r"C:\Users\timot\OneDrive\Desktop\EMORY\Spring 2024\BMI-534\project-code\code\bmi-534-final-project\harth_preprocessed_data_pca_206_window.csv"
+=======
+data = r"harth_preprocessed_data_206_window.csv"
+>>>>>>> 0142a6f81061a8d68a3878a77bca042614003f5c
 # %%
 df = pd.read_csv(data)
 
