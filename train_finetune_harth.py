@@ -41,13 +41,13 @@ for fold in folds:
     # configs.num_epoch = 50
 
     config = {
-        # "fine_tune_train": f"/opt/scratchspace/todonga/bmi-534-project/processed_data/harth_train_fold_{fold}.pt",
-        # "fine_tune_test": f"/opt/scratchspace/todonga/bmi-534-project/processed_data/harth_test_fold_{fold}.pt",
+        "fine_tune_train": f"/opt/scratchspace/todonga/bmi-534-project/processed_data/harth_train_fold_{fold}.pt",
+        "fine_tune_test": f"/opt/scratchspace/todonga/bmi-534-project/processed_data/harth_test_fold_{fold}.pt",
         # "pretrained_model": "saved_models/ckp_last.pt",
         "experiment_log_dir": "./",
         "model_type": f"{sys.argv[1]}",
-        "fine_tune_train": f"C:/Users/timot/OneDrive/Desktop/EMORY/Spring 2024/BMI-534/project-code/code/bmi-534-final-project/processed_data/harth_train_fold_{fold}.pt",
-        "fine_tune_test": f"C:/Users/timot/OneDrive/Desktop/EMORY/Spring 2024/BMI-534/project-code/code/bmi-534-final-project/processed_data/harth_test_fold_{fold}.pt",
+        # "fine_tune_train": f"C:/Users/timot/OneDrive/Desktop/EMORY/Spring 2024/BMI-534/project-code/code/bmi-534-final-project/processed_data/harth_train_fold_{fold}.pt",
+        # "fine_tune_test": f"C:/Users/timot/OneDrive/Desktop/EMORY/Spring 2024/BMI-534/project-code/code/bmi-534-final-project/processed_data/harth_test_fold_{fold}.pt",
         # "pretrained_model": r"C:\Users\timot\OneDrive\Desktop\EMORY\Spring 2024\BMI-534\project-code\code\bmi-534-final-project\saved_models\ckp_last.pt",
         # "fine_tune_train": f"harth_train__pca_fold_{fold}.pt",
         # "fine_tune_test": f"harth_test_pca_fold_{fold}.pt",
