@@ -292,9 +292,9 @@ for fold in folds:
                 print("**** Loss has dropped .... model saved")
                 gvalid_loss = valid_loss
 
-            if valid_f1 > max_f1:
-                print("**** F1 score is greater than previous F1 .... model saved")
-                max_f1 = valid_f1
+            # if valid_f1 > max_f1:
+            #     print("**** F1 score is greater than previous F1 .... model saved")
+            #     max_f1 = valid_f1
 
             if config["model_type"] == "cnn_small":
                 torch.save(
