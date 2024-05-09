@@ -281,7 +281,8 @@ for fold in folds:
         )
         print(f"Patience counter: {pt_counter}")
 
-        if valid_loss < gvalid_loss or valid_f1 > max_f1:
+        # if valid_loss < gvalid_loss or valid_f1 > max_f1:
+        if valid_loss < gvalid_loss:
 
             os.makedirs("experiments_logs/finetunemodel/", exist_ok=True)
 
@@ -342,6 +343,115 @@ for fold in folds:
                     "====Patience for modeling training reached. Breaking from the train loop===="
                 )
                 break
+
+        if epoch % 5 == 0:
+            print("Checking model generalizability every 5 epochs")
+            # evaluate on the test set
+            """Testing set"""
+            # logger.debug('Test on Target datasts test set')
+            print("Test on Target datasts test set")
+            if config["model_type"] == "cnn":
+                TFC_model.load_state_dict(
+                    torch.load(
+                        "experiments_logs/finetunemodel/"
+                        + config["arch"]
+                        + f"_{config['tfc_type']}_{config['model_type']}_fold_{fold}_model_{timestamp}.pt",
+                    )
+                )
+
+                classifier.load_state_dict(
+                    torch.load(
+                        "experiments_logs/finetunemodel/"
+                        + config["arch"]
+                        + f"_cnn_fold_{fold}_classifier_{timestamp}.pt"
+                    )
+                )
+            elif config["model_type"] == "cnn_small":
+                TFC_model.load_state_dict(
+                    torch.load(
+                        "experiments_logs/finetunemodel/"
+                        + config["arch"]
+                        + f"_{config['tfc_type']}_{config['model_type']}_fold_{fold}_model_{timestamp}.pt",
+                    )
+                )
+
+                classifier.load_state_dict(
+                    torch.load(
+                        "experiments_logs/finetunemodel/"
+                        + config["arch"]
+                        + f"_cnn_small_fold_{fold}_classifier_{timestamp}.pt"
+                    )
+                )
+            else:
+                TFC_model.load_state_dict(
+                    torch.load(
+                        "experiments_logs/finetunemodel/"
+                        + config["arch"]
+                        + f"_{config['tfc_type']}_{config['model_type']}_fold_{fold}_model_{timestamp}.pt",
+                    )
+                )
+
+                classifier.load_state_dict(
+                    torch.load(
+                        "experiments_logs/finetunemodel/"
+                        + config["arch"]
+                        + f"_fold_{fold}_classifier_{timestamp}.pt"
+                    )
+                )
+
+            if config["model_type"] == "cnn" or config["model_type"] == "cnn_small":
+                test_loss, out_batch, out_label, out_pred, out_probabilties_ = (
+                    model_test_cnn(
+                        model=TFC_model,
+                        test_dl=test_loader,
+                        config=configs,
+                        device=device,
+                        training_mode=training_mode,
+                        criterion=criterion,
+                        classifier=classifier,
+                        classifier_optimizer=classifier_optimizer,
+                        tfc_type=config["tfc_type"],
+                    )
+                )
+            else:
+                test_loss, out_batch, out_label, out_pred, out_probabilties_ = (
+                    model_test(
+                        model=TFC_model,
+                        test_dl=test_loader,
+                        config=configs,
+                        device=device,
+                        training_mode=training_mode,
+                        criterion=criterion,
+                        classifier=classifier,
+                        classifier_optimizer=classifier_optimizer,
+                        tfc_type=config["tfc_type"],
+                    )
+                )
+
+            accuracy = accuracy_score(
+                y_true=out_label,
+                y_pred=out_pred,
+            )
+
+            f1 = f1_score(
+                y_true=out_label, y_pred=out_pred, average="macro", zero_division=np.nan
+            )
+
+            try:
+                roc_value = roc_auc_score(
+                    y_true=out_label,
+                    y_score=out_probabilties_,
+                    multi_class="ovr",
+                    average="macro",
+                )
+            except:
+                roc_value = np.nan
+
+            print("=" * 20)
+            print(f"Test Loss: {test_loss}")
+            print(f"Accuracy: {accuracy}")
+            print(f"F1 score (macro): {f1}")
+            print(f"AUC (macro): {roc_value}")
 
     # %%
     # evaluate on the test set
