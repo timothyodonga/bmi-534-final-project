@@ -21,9 +21,22 @@ from routines.train import train_one_epoch
 from routines.validate import validate_model
 from routines.test import test_model
 import kfolds
+import argparse
+
 
 # %%
-data = r"C:/Users/timot/OneDrive/Desktop/EMORY/Spring 2024/Research/code/fog_project/data/segmented_defog_data_no_overlap_normalized.csv"
+
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    "-data",
+    type=str,
+    help="Path to the csv file containing  preprocessed defog data",
+)
+
+args = parser.parse_args()
+print(args)
+
+data = args.data
 # %%
 df = pd.read_csv(data)
 
