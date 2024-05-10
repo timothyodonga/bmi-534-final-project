@@ -50,7 +50,7 @@ parser.add_argument(
 
 parser.add_argument(
     "-num_epochs",
-    type=str,
+    type=int,
     help="Number of epochs to run",
     default=20,
 )
@@ -436,7 +436,9 @@ for fold in folds:
             )
 
             f1 = f1_score(
-                y_true=out_label, y_pred=out_pred, average="macro", zero_division=np.nan
+                y_true=out_label,
+                y_pred=out_pred,
+                average="macro",
             )
 
             try:
@@ -539,9 +541,7 @@ for fold in folds:
         y_pred=out_pred,
     )
 
-    f1 = f1_score(
-        y_true=out_label, y_pred=out_pred, average="macro", zero_division=np.nan
-    )
+    f1 = f1_score(y_true=out_label, y_pred=out_pred, average="macro")
 
     try:
         roc_value = roc_auc_score(

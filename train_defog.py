@@ -23,12 +23,41 @@ from routines.test import test_model
 import kfolds
 from utils import standardize_classes
 from train_test_configs import train_defog_config
+import argparse
+
 
 # %%
-
 config = train_defog_config
-
 df_performance = pd.DataFrame()
+
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    "-data",
+    type=str,
+    help="Path to the preprocessed data for the defogd data",
+)
+
+parser.add_argument(
+    "-model_type",
+    type=str,
+    help="Type of the classifier model",
+    default="mlp",
+)
+
+parser.add_argument(
+    "-num_epochs",
+    type=int,
+    help="Number of epochs to run",
+    default=20,
+)
+
+args = parser.parse_args()
+
+config["data"] = args.data
+config["model_name"] = f"defog_{args.model_type}"
+model_name = config["model_name"]
+config["num_epochs"] = args.num_epochs
+
 # %%
 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 df = pd.read_csv(config["data"])
@@ -119,7 +148,6 @@ for key, value in k_fold_split.items():
     print(device)
 
     # %%s
-    model_name = config["model_name"]
     if model_name == "defog_cnn":
         model = BaselineCNN(
             num_sensor_channels=config["num_sensor_channels"],
@@ -134,11 +162,15 @@ for key, value in k_fold_split.items():
         )
     elif model_name == "defog_mlp_small":
         model = MLPSmall(
-            num_sensor_channels=config["num_sensor_channels"], num_output_classes=2
+            num_sensor_channels=config["num_sensor_channels"],
+            num_output_classes=2,
+            num_in_features=300,
         )
     elif model_name == "defog_mlp":
         model = MLP(
-            num_sensor_channels=config["num_sensor_channels"], num_output_classes=2
+            num_sensor_channels=config["num_sensor_channels"],
+            num_output_classes=2,
+            num_in_features=300,
         )
     model.to(device)
     print(model)
@@ -159,7 +191,7 @@ for key, value in k_fold_split.items():
     best_vloss = np.inf
     loss_fn = criterion
 
-    for epoch_number in range(config["NUM_EPOCHS"]):
+    for epoch_number in range(config["num_epochs"]):
         print("EPOCH {}:".format(epoch_number))
         model.train(True)
         model.zero_grad()
@@ -211,21 +243,14 @@ for key, value in k_fold_split.items():
     lbl = pd.DataFrame({"label": out_pred})
     print(lbl.value_counts())
 
-    f1_value = f1_score(
-        y_true=out_label, y_pred=out_pred, average="macro", zero_division=np.nan
-    )
-    print(f1_value)
-
+    f1_value = f1_score(y_true=out_label, y_pred=out_pred, average="macro")
     acc_value = accuracy_score(y_true=out_label, y_pred=out_pred)
-    print(acc_value)
-
     roc_value = roc_auc_score(y_true=out_label, y_score=out_prob[:, 1], average="macro")
 
-    # f1_per_class = f1_score(
-    #     y_true=out_label, y_pred=out_pred[:, 1], average=None, zero_division=np.nan
-    # )
-
-    # f1_scores_per_class.append(f1_per_class)
+    print("=" * 20)
+    print(f"Accuracy: {acc_value}")
+    print(f"F1 score (macro): {f1_value}")
+    print(f"AUC (macro): {roc_value}")
 
     new_data = pd.DataFrame(
         {

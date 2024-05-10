@@ -140,7 +140,7 @@ class MLP(nn.Module):
         self.num_in_features = num_in_features
 
     def forward(self, x):
-        x = x.view(-1, self.num_in_fearures * self.num_sensor_channels)
+        x = x.view(-1, self.num_in_features * self.num_sensor_channels)
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
         x = F.relu(self.fc3(x))
