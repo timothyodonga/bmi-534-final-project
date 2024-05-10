@@ -46,32 +46,19 @@ for fold in folds:
         # "pretrained_model": "saved_models/ckp_last.pt",
         # "experiment_log_dir": "./",
         # "model_type": f"{sys.argv[1]}",
-        "fine_tune_train": f"C:/Users/timot/OneDrive/Desktop/EMORY/Spring 2024/BMI-534/project-code/code/bmi-534-final-project/harth_train_pca_3pcs_fold_{fold}.pt",
-        "fine_tune_test": f"C:/Users/timot/OneDrive/Desktop/EMORY/Spring 2024/BMI-534/project-code/code/bmi-534-final-project/harth_test_pca_3pcs_fold_{fold}.pt",
+        "fine_tune_train": f"defog_train_fold_{fold}.pt",
+        "fine_tune_test": f"defog_test_fold_{fold}.pt",
         # "pretrained_model": r"C:\Users\timot\OneDrive\Desktop\EMORY\Spring 2024\BMI-534\project-code\code\bmi-534-final-project\saved_models\ckp_last.pt",
         # "fine_tune_train": f"harth_train__pca_fold_{fold}.pt",
         # "fine_tune_test": f"harth_test_pca_fold_{fold}.pt",
-        "pretrained_model": r"saved_models/cnn_ckp_last.pt",
+        "pretrained_model": r"saved_models\cnn_defog_ckp_last.pt",
         "experiment_log_dir": r"C:\Users\timot\OneDrive\Desktop\EMORY\Spring 2024\BMI-534\project-code\code\bmi-534-final-project",
         "model_type": "cnn_small",
-        "arch": "daily2harth",
+        "arch": "daily2defog",
         "training_mode": "fine_tune_test",
-        "num_epochs": 2,
+        "num_epochs": 100,
         # "model_name": "harth_mlp_finetuned",
-        "class_weights": [
-            0.15076889696509452,
-            0.01749342301537794,
-            0.04228255268368094,
-            0.011716525182392667,
-            0.009465433538553334,
-            0.12665780694855036,
-            0.5197851970383228,
-            0.07057036695505953,
-            0.04228255268368094,
-            0.004041116324482656,
-            0.0047191559762414905,
-            0.00021697268856282715,
-        ],
+        "class_weights": [0.85, 0.15],
         "tfc_type": "cnn",
     }
 
@@ -121,7 +108,7 @@ for fold in folds:
         shuffle=False,
         drop_last=configs.drop_last,
         num_workers=0,
-        sampler=ImbalancedDatasetSampler(finetune_dataset_train),
+        # sampler=ImbalancedDatasetSampler(finetune_dataset_train),
     )
 
     finetune_loader_valid = torch.utils.data.DataLoader(
@@ -130,7 +117,7 @@ for fold in folds:
         shuffle=False,
         drop_last=configs.drop_last,
         num_workers=0,
-        sampler=ImbalancedDatasetSampler(finetune_dataset_valid),
+        # sampler=ImbalancedDatasetSampler(finetune_dataset_valid),
     )
 
     test_loader = torch.utils.data.DataLoader(
@@ -156,7 +143,7 @@ for fold in folds:
     if config["tfc_type"] == "transformer":
         TFC_model = TFC(configs)
     else:
-        TFC_model = TFCCNN(configs)
+        TFC_model = TFCCNN(configs, embed_length=292)
 
     print("Loading the pre-trained model")
     TFC_model.load_state_dict(torch.load(config["pretrained_model"]))
@@ -165,14 +152,14 @@ for fold in folds:
     # %%
     if config["model_type"] == "cnn_small":
         classifier = BaselineCNNSmall(
-            num_sensor_channels=2, num_output_classes=12, embed_length=120
+            num_sensor_channels=2, num_output_classes=2, embed_length=120
         ).to(device)
     elif config["model_type"] == "cnn":
         classifier = BaselineCNN(
-            num_sensor_channels=2, num_output_classes=12, embed_length=112
+            num_sensor_channels=2, num_output_classes=2, embed_length=112
         ).to(device)
     else:
-        classifier = MLPTFC(num_sensor_channels=2, num_output_classes=12).to(device)
+        classifier = MLPTFC(num_sensor_channels=2, num_output_classes=2).to(device)
 
     print("Printing the classifier")
     print(classifier)
@@ -205,8 +192,8 @@ for fold in folds:
 
     class_weights = 1 / torch.tensor(config["class_weights"], dtype=torch.float)
     class_weights.to(device)
-    # criterion = nn.CrossEntropyLoss(weight=class_weights).to(device)
-    criterion = nn.CrossEntropyLoss()
+    criterion = nn.CrossEntropyLoss(weight=class_weights).to(device)
+    # criterion = nn.CrossEntropyLoss()
 
     patience = 20
     pt_counter = 0
@@ -544,8 +531,7 @@ for fold in folds:
     try:
         roc_value = roc_auc_score(
             y_true=out_label,
-            y_score=out_probabilties_,
-            multi_class="ovr",
+            y_score=out_probabilties_[:, 1],
             average="macro",
         )
     except:

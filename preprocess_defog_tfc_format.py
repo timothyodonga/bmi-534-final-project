@@ -8,8 +8,8 @@ from sklearn.decomposition import PCA
 # TODO - Need to figure out if it is necessary to normalize the data
 # %%
 data_path = r"C:\Users\timot\OneDrive\Desktop\EMORY\Spring 2024\BMI-534\project-code\data\harth\harth"
-sliding_window_length = 206
-sliding_window_step = 206
+sliding_window_length = 300
+sliding_window_step = 300
 
 # %%
 os.listdir(data_path)
@@ -18,8 +18,8 @@ os.listdir(data_path)
 df = pd.DataFrame()
 csv_files = [file for file in os.listdir(data_path) if file.endswith(".csv")]
 
-max_values_harth = pd.read_csv("csv_files/harth_max_values.csv").to_numpy()
-min_values_harth = pd.read_csv("csv_files/harth_min_values.csv").to_numpy()
+max_values_harth = pd.read_csv("csv_files/defog_max_values.csv").to_numpy()
+min_values_harth = pd.read_csv("csv_files/defog_min_values.csv").to_numpy()
 
 # %%
 for file in csv_files:

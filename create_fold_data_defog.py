@@ -23,53 +23,23 @@ from routines.test import test_model
 import kfolds
 
 # %%
-# data = r"C:\Users\timot\OneDrive\Desktop\EMORY\Spring 2024\BMI-534\project-code\code\bmi-534-final-project\harth_preprocessed_data_pca_206_window.csv"
-data = r"harth_preprocessed_data_pca_3pcs_206_window.csv"
+data = r"C:/Users/timot/OneDrive/Desktop/EMORY/Spring 2024/Research/code/fog_project/data/segmented_defog_data_no_overlap_normalized.csv"
 # %%
 df = pd.read_csv(data)
 
 
 # %%
-def standardize_classes(x):
-    if x == 1:
-        return 0
-    if x == 2:
-        return 1
-    elif x == 3:
-        return 2
-    elif x == 4:
-        return 3
-    elif x == 5:
-        return 4
-    elif x == 6:
-        return 5
-    elif x == 7:
-        return 6
-    elif x == 8:
-        return 7
-    elif x == 13:
-        return 8
-    elif x == 14:
-        return 9
-    elif x == 130:
-        return 10
-    elif x == 140:
-        return 11
-
-
-# %%
-df["label_"] = df["label"].apply(lambda x: int(ast.literal_eval(x)[-1]))
-df["label_"] = df["label_"].apply(lambda x: int(standardize_classes(x)))
+df["label_"] = df["fog"].apply(lambda x: int(ast.literal_eval(x)[-1]))
 # %%
 print(df["label_"].value_counts(normalize=True))
 df["features"] = df["features"].apply(lambda x: ast.literal_eval(x))
 
 # %%
 print("Printing the folds")
-k_fold_split = kfolds.harth_5_fold
+k_fold_split = kfolds.defog_5_fold
 print(k_fold_split)
 
-subjects = list(df["subject"].unique())
+subjects = list(df["Subject"].unique())
 
 # %%
 for key, value in k_fold_split.items():
@@ -79,10 +49,10 @@ for key, value in k_fold_split.items():
     print(train)
     print(test)
 
-    df_train = df[df["subject"].isin(train)]
+    df_train = df[df["Subject"].isin(train)]
     print(df_train["label_"].value_counts(normalize=True))
 
-    df_test = df[df["subject"].isin(test)]
+    df_test = df[df["Subject"].isin(test)]
     print(df_test["label_"].value_counts(normalize=True))
 
     features_train = np.array(df_train["features"].tolist())
@@ -106,7 +76,7 @@ for key, value in k_fold_split.items():
         "labels": torch.as_tensor(label_test).float(),
     }
 
-    torch.save(train_tensor, f"harth_train_pca_3pcs_fold_{key}.pt")
-    torch.save(test_tensor, f"harth_test_pca_3pcs_fold_{key}.pt")
+    torch.save(train_tensor, f"defog_train_fold_{key}.pt")
+    torch.save(test_tensor, f"defog_test_fold_{key}.pt")
 
 # %%

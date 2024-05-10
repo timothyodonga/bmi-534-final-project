@@ -15,7 +15,7 @@ class Config(object):
         self.features_len = 18
 
         # training configs
-        self.num_epoch = 3
+        self.num_epoch = 100
 
         # optimizer parameters
         self.beta1 = 0.9
@@ -31,7 +31,7 @@ class Config(object):
         self.augmentation = augmentations()
 
         """New hyperparameters"""
-        self.TSlength_aligned = 206
+        self.TSlength_aligned = 300  # 206
         self.lr_f = self.lr
         self.target_batch_size = 16  # 128  #  84
         self.increased_dim = 1

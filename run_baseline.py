@@ -297,15 +297,11 @@ out_batch, out_label, out_pred, out_prob = test_model(
 )
 
 lbl = pd.DataFrame({"label": out_label})
-# print(lbl.value_counts())
 
 lbl = pd.DataFrame({"label": out_pred})
-# print(lbl.value_counts())
+
 
 print(f"F1 score: {f1_score(y_true=out_label, y_pred=out_pred, average='macro')}")
-# print(precision_score(y_true=out_label, y_pred=out_pred, average="weighted"))
-# print(recall_score(y_true=out_label, y_pred=out_pred, average="weighted"))
-# print(roc_auc_score(y_true=out_label, y_pred=out_pred, average="macro"))
 print(f"Accuracy: {accuracy_score(y_true=out_label, y_pred=out_pred)}")
 print(
     f"AUC ROC: {roc_auc_score(y_true=out_label, y_score=out_prob, multi_class='ovr')}"

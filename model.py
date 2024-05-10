@@ -128,16 +128,19 @@ class BaselineCNNSmall(nn.Module):
 
 
 class MLP(nn.Module):
-    def __init__(self, num_sensor_channels, num_output_classes):
+    def __init__(self, num_sensor_channels, num_output_classes, num_in_features):
         super(MLP, self).__init__()
-        self.fc1 = nn.Linear(in_features=150 * num_sensor_channels, out_features=1800)
+        self.fc1 = nn.Linear(
+            in_features=num_in_features * num_sensor_channels, out_features=1800
+        )
         self.fc2 = nn.Linear(in_features=1800, out_features=900)
         self.fc3 = nn.Linear(in_features=900, out_features=450)
         self.fc4 = nn.Linear(in_features=450, out_features=num_output_classes)
         self.num_sensor_channels = num_sensor_channels
+        self.num_in_features = num_in_features
 
     def forward(self, x):
-        x = x.view(-1, 150 * self.num_sensor_channels)
+        x = x.view(-1, self.num_in_fearures * self.num_sensor_channels)
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
         x = F.relu(self.fc3(x))
@@ -147,16 +150,19 @@ class MLP(nn.Module):
 
 
 class MLPSmall(nn.Module):
-    def __init__(self, num_sensor_channels, num_output_classes):
+    def __init__(self, num_sensor_channels, num_output_classes, num_in_features=150):
         super(MLPSmall, self).__init__()
-        self.fc1 = nn.Linear(in_features=150 * num_sensor_channels, out_features=1800)
+        self.fc1 = nn.Linear(
+            in_features=num_in_features * num_sensor_channels, out_features=1800
+        )
         # self.fc2 = nn.Linear(in_features=1800, out_features=900)
         # self.fc3 = nn.Linear(in_features=900, out_features=450)
         self.fc4 = nn.Linear(in_features=1800, out_features=num_output_classes)
         self.num_sensor_channels = num_sensor_channels
+        self.num_in_features = num_in_features
 
     def forward(self, x):
-        x = x.view(-1, 150 * self.num_sensor_channels)
+        x = x.view(-1, self.num_in_features * self.num_sensor_channels)
         x = F.relu(self.fc1(x))
         # x = F.relu(self.fc2(x))
         # x = F.relu(self.fc3(x))
@@ -166,7 +172,7 @@ class MLPSmall(nn.Module):
 
 
 class MLPTFC(nn.Module):
-    def __init__(self, num_sensor_channels, num_output_classes):
+    def __init__(self, num_sensor_channels, num_output_classes, num_in_features=128):
         super(MLPTFC, self).__init__()
         self.fc1 = nn.Linear(in_features=128 * num_sensor_channels, out_features=512)
         # self.fc2 = nn.Linear(in_features=1800, out_features=900)
@@ -238,7 +244,7 @@ class TFC(nn.Module):
 
 
 class TFCCNN(nn.Module):
-    def __init__(self, configs, num_filters=64, filter_size=5):
+    def __init__(self, configs, num_filters=64, filter_size=5, embed_length=198):
         super(TFCCNN, self).__init__()
 
         self.cnn_encoder_t = nn.Sequential(
@@ -257,7 +263,7 @@ class TFCCNN(nn.Module):
         )
 
         self.projector_t = nn.Sequential(
-            nn.Linear(64 * 198 * configs.input_channels, 256),
+            nn.Linear(64 * embed_length * configs.input_channels, 256),
             nn.BatchNorm1d(256),
             nn.ReLU(),
             nn.Linear(256, 128),
@@ -279,7 +285,7 @@ class TFCCNN(nn.Module):
         )
 
         self.projector_f = nn.Sequential(
-            nn.Linear(64 * 198 * configs.input_channels, 256),
+            nn.Linear(64 * embed_length * configs.input_channels, 256),
             nn.BatchNorm1d(256),
             nn.ReLU(),
             nn.Linear(256, 128),
