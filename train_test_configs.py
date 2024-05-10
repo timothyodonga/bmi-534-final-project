@@ -61,3 +61,10 @@ train_finetune_harth_config = config = {
         0.00021697268856282715,
     ],
 }
+
+config_pretrain_daily_harth = {
+    "subset": True,
+    "batch_size": 16,
+    "training_mode": "pre_train",
+    "experiment_log_dir": r"./",
+}
