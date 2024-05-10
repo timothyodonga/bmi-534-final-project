@@ -51,7 +51,6 @@ parser.add_argument(
     default=20,
 )
 
-
 args = parser.parse_args()
 
 config["data"] = args.data

@@ -461,7 +461,7 @@ for fold in folds:
     # evaluate on the test set
     """Testing set"""
     # logger.debug('Test on Target datasts test set')
-    print("Test on Target datasts test set")
+    print("Test on Target dataset's test set")
     if config["model_type"] == "cnn":
         TFC_model.load_state_dict(
             torch.load(
