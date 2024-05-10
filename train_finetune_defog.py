@@ -25,6 +25,7 @@ from tfc_finetune_routines import *
 import sys
 import pandas as pd
 from torchsampler import ImbalancedDatasetSampler
+from train_test_configs import train_finetune_defog_config
 
 # %%
 df_performance = pd.DataFrame()
@@ -32,35 +33,14 @@ folds = ["0", "1", "2", "3", "4"]
 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
 # print(f"Model type: {sys.argv[1]}")
+config = train_finetune_defog_config
 
 for fold in folds:
     print(f"Fold: {fold}")
     training_mode = "fine_tune_test"
-
-    # arch = "daily2harth"
-    # configs.num_epoch = 50
-
-    config = {
-        # "fine_tune_train": f"/opt/scratchspace/todonga/bmi-534-project/processed_data/harth_train_fold_{fold}.pt",
-        # "fine_tune_test": f"/opt/scratchspace/todonga/bmi-534-project/processed_data/harth_test_fold_{fold}.pt",
-        # "pretrained_model": "saved_models/ckp_last.pt",
-        # "experiment_log_dir": "./",
-        # "model_type": f"{sys.argv[1]}",
-        "fine_tune_train": f"defog_train_fold_{fold}.pt",
-        "fine_tune_test": f"defog_test_fold_{fold}.pt",
-        # "pretrained_model": r"C:\Users\timot\OneDrive\Desktop\EMORY\Spring 2024\BMI-534\project-code\code\bmi-534-final-project\saved_models\ckp_last.pt",
-        # "fine_tune_train": f"harth_train__pca_fold_{fold}.pt",
-        # "fine_tune_test": f"harth_test_pca_fold_{fold}.pt",
-        "pretrained_model": r"saved_models\cnn_defog_ckp_last.pt",
-        "experiment_log_dir": r"C:\Users\timot\OneDrive\Desktop\EMORY\Spring 2024\BMI-534\project-code\code\bmi-534-final-project",
-        "model_type": "cnn_small",
-        "arch": "daily2defog",
-        "training_mode": "fine_tune_test",
-        "num_epochs": 100,
-        # "model_name": "harth_mlp_finetuned",
-        "class_weights": [0.85, 0.15],
-        "tfc_type": "cnn",
-    }
+    config["fine_tune_train"] = f"defog_train_fold_{fold}.pt"
+    config["fine_tune_test"] = f"defog_test_fold_{fold}.pt"
+    config["model_type"] = sys.argv[1]
 
     # %%
     finetune_train = torch.load(config["fine_tune_train"])
