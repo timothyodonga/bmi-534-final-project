@@ -74,8 +74,6 @@ for fold in folds:
 
     print(config)
 
-    break
-
     # %%
     finetune_train = torch.load(config["fine_tune_train"])
     finetune_test = torch.load(config["fine_tune_test"])
@@ -85,6 +83,9 @@ for fold in folds:
     print(configs.__dict__)
     training_mode = "pre_train"
     subset = False
+
+    configs.tfc_type = config["tfc_type"]
+    configs.TSlength_aligned = 300
 
     # %%
     finetune_dataset_train = Load_DatasetTwo(
