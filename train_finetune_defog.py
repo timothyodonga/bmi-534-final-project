@@ -26,21 +26,55 @@ import sys
 import pandas as pd
 from torchsampler import ImbalancedDatasetSampler
 from train_test_configs import train_finetune_defog_config
+import argparse
 
 # %%
 df_performance = pd.DataFrame()
 folds = ["0", "1", "2", "3", "4"]
 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
-# print(f"Model type: {sys.argv[1]}")
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    "-tfc_type",
+    type=str,
+    help="Type of the tfc encoder model",
+    default="transformer",
+)
+
+parser.add_argument(
+    "-model_type",
+    type=str,
+    help="Type of the downstream classifier model",
+    default="mlp",
+)
+
+parser.add_argument(
+    "-num_epochs",
+    type=str,
+    help="Number of epochs to run",
+    default=20,
+)
+
+
+args = parser.parse_args()
+print(args)
 config = train_finetune_defog_config
+
+config["model_type"] = args.model_type
+config["tfc_type"] = args.tfc_type
+config["pretrained_model"] = f"saved_models/{args.tfc_type}_defog_ckp_last.pt"
+config["num_epochs"] = args.num_epochs
+print(config)
 
 for fold in folds:
     print(f"Fold: {fold}")
     training_mode = "fine_tune_test"
     config["fine_tune_train"] = f"defog_train_fold_{fold}.pt"
     config["fine_tune_test"] = f"defog_test_fold_{fold}.pt"
-    config["model_type"] = sys.argv[1]
+
+    print(config)
+
+    break
 
     # %%
     finetune_train = torch.load(config["fine_tune_train"])

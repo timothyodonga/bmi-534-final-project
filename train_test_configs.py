@@ -13,11 +13,8 @@ train_defog_config = {
 
 
 train_finetune_defog_config = {
-    "pretrained_model": r"saved_models/cnn_defog_ckp_last.pt",
     "experiment_log_dir": r"./",
     "arch": "daily2defog",
     "training_mode": "fine_tune_test",
-    "num_epochs": 100,
     "class_weights": [0.85, 0.15],
-    "tfc_type": "cnn",
 }
