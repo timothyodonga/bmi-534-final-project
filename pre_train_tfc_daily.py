@@ -3,23 +3,46 @@
 import os
 import numpy as np
 from datetime import datetime
-import argparse
 from model import *
 from dataloader import generate_freq, Load_Dataset, Load_DatasetTwo
 from configs import Config
 from trainer import model_pretrain, model_test
 from loss import *
 from model import *
+from train_test_configs import config_pretrain_daily_harth
+import argparse
 
 # %%
-config = {
-    "pretrain_data": r"C:\Users\timot\OneDrive\Desktop\EMORY\Spring 2024\BMI-534\project-code\code\bmi-534-final-project\saved_models\daily_living_sample.pt",
-    "subset": True,
-    "batch_size": 16,
-    "training_mode": "pre_train",
-    "experiment_log_dir": r"C:\Users\timot\OneDrive\Desktop\EMORY\Spring 2024\BMI-534\project-code\code\bmi-534-final-project",
-    "tfc_type": "cnn",
-}
+config = config_pretrain_daily_harth
+
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    "-tfc_type",
+    type=str,
+    help="Type of the tfc encoder model",
+    default="transformer",
+)
+
+
+parser.add_argument(
+    "-num_epochs",
+    type=int,
+    help="Number of epochs to run",
+    default=20,
+)
+
+parser.add_argument(
+    "-pretrain_data",
+    type=str,
+    help="Path to the preprocessed pretrain data",
+)
+
+
+args = parser.parse_args()
+print(args)
+
+config["pretrain_data"] = args.pretrain_data
+config["tfc_type"] = args.tfc_type
 
 # %%
 pretrain_train = torch.load(config["pretrain_data"])
@@ -29,6 +52,8 @@ configs = Config()
 print(configs.__dict__)
 training_mode = config["training_mode"]
 subset = config["subset"]
+configs.TSlength_aligned = 206
+configs.num_epoch = args.num_epochs
 
 # %%
 # Load the data

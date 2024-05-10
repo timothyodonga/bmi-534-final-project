@@ -25,42 +25,54 @@ from tfc_finetune_routines import *
 import sys
 import pandas as pd
 from torchsampler import ImbalancedDatasetSampler
+from train_test_configs import train_finetune_defog_config
+import argparse
 
 # %%
 df_performance = pd.DataFrame()
 folds = ["0", "1", "2", "3", "4"]
 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
-# print(f"Model type: {sys.argv[1]}")
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    "-tfc_type",
+    type=str,
+    help="Type of the tfc encoder model",
+    default="transformer",
+)
+
+parser.add_argument(
+    "-model_type",
+    type=str,
+    help="Type of the downstream classifier model",
+    default="mlp",
+)
+
+parser.add_argument(
+    "-num_epochs",
+    type=int,
+    help="Number of epochs to run",
+    default=20,
+)
+
+
+args = parser.parse_args()
+print(args)
+config = train_finetune_defog_config
+
+config["model_type"] = args.model_type
+config["tfc_type"] = args.tfc_type
+config["pretrained_model"] = f"saved_models/{args.tfc_type}_defog_ckp_last.pt"
+config["num_epochs"] = args.num_epochs
+print(config)
 
 for fold in folds:
     print(f"Fold: {fold}")
     training_mode = "fine_tune_test"
+    config["fine_tune_train"] = f"defog_train_fold_{fold}.pt"
+    config["fine_tune_test"] = f"defog_test_fold_{fold}.pt"
 
-    # arch = "daily2harth"
-    # configs.num_epoch = 50
-
-    config = {
-        # "fine_tune_train": f"/opt/scratchspace/todonga/bmi-534-project/processed_data/harth_train_fold_{fold}.pt",
-        # "fine_tune_test": f"/opt/scratchspace/todonga/bmi-534-project/processed_data/harth_test_fold_{fold}.pt",
-        # "pretrained_model": "saved_models/ckp_last.pt",
-        # "experiment_log_dir": "./",
-        # "model_type": f"{sys.argv[1]}",
-        "fine_tune_train": f"defog_train_fold_{fold}.pt",
-        "fine_tune_test": f"defog_test_fold_{fold}.pt",
-        # "pretrained_model": r"C:\Users\timot\OneDrive\Desktop\EMORY\Spring 2024\BMI-534\project-code\code\bmi-534-final-project\saved_models\ckp_last.pt",
-        # "fine_tune_train": f"harth_train__pca_fold_{fold}.pt",
-        # "fine_tune_test": f"harth_test_pca_fold_{fold}.pt",
-        "pretrained_model": r"saved_models\cnn_defog_ckp_last.pt",
-        "experiment_log_dir": r"C:\Users\timot\OneDrive\Desktop\EMORY\Spring 2024\BMI-534\project-code\code\bmi-534-final-project",
-        "model_type": "cnn_small",
-        "arch": "daily2defog",
-        "training_mode": "fine_tune_test",
-        "num_epochs": 100,
-        # "model_name": "harth_mlp_finetuned",
-        "class_weights": [0.85, 0.15],
-        "tfc_type": "cnn",
-    }
+    print(config)
 
     # %%
     finetune_train = torch.load(config["fine_tune_train"])
@@ -71,6 +83,9 @@ for fold in folds:
     print(configs.__dict__)
     training_mode = "pre_train"
     subset = False
+
+    configs.tfc_type = config["tfc_type"]
+    configs.TSlength_aligned = 300
 
     # %%
     finetune_dataset_train = Load_DatasetTwo(
@@ -421,7 +436,9 @@ for fold in folds:
             )
 
             f1 = f1_score(
-                y_true=out_label, y_pred=out_pred, average="macro", zero_division=np.nan
+                y_true=out_label,
+                y_pred=out_pred,
+                average="macro",
             )
 
             try:
@@ -444,7 +461,7 @@ for fold in folds:
     # evaluate on the test set
     """Testing set"""
     # logger.debug('Test on Target datasts test set')
-    print("Test on Target datasts test set")
+    print("Test on Target dataset's test set")
     if config["model_type"] == "cnn":
         TFC_model.load_state_dict(
             torch.load(
@@ -524,9 +541,7 @@ for fold in folds:
         y_pred=out_pred,
     )
 
-    f1 = f1_score(
-        y_true=out_label, y_pred=out_pred, average="macro", zero_division=np.nan
-    )
+    f1 = f1_score(y_true=out_label, y_pred=out_pred, average="macro")
 
     try:
         roc_value = roc_auc_score(

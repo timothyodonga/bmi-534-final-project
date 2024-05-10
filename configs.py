@@ -40,7 +40,7 @@ class Config(object):
         self.features_len_f = self.features_len
         self.CNNoutput_channel = 28  #  104
 
-        self.tfc_type = "cnn"
+        self.tfc_type = "transformer"
 
 
 class augmentations(object):

@@ -22,35 +22,42 @@ from routines.validate import validate_model
 from routines.test import test_model
 import kfolds
 from utils import standardize_classes
+from train_test_configs import train_harth_config
+import argparse
 
 # %%
-config = {
-    "BATCH_SIZE": 64,
-    "learning_rate": 0.0001,
-    "weight_decay": 0.0001,
-    "NUM_EPOCHS": 10,
-    "train_valid_split": 0.8,
-    "data": "harth_preprocessed_data_206_window.csv",
-    "num_sensor_channels": 6,
-    "class_weights": [
-        0.15076889696509452,
-        0.01749342301537794,
-        0.04228255268368094,
-        0.011716525182392667,
-        0.009465433538553334,
-        0.12665780694855036,
-        0.5197851970383228,
-        0.07057036695505953,
-        0.04228255268368094,
-        0.004041116324482656,
-        0.0047191559762414905,
-        0.00021697268856282715,
-    ],
-    "k": 5,
-    "model_name": f"mlp",
-}
-
 df_performance = pd.DataFrame()
+
+config = train_harth_config
+
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    "-data",
+    type=str,
+    help="Path to the preprocessed data for the HARTH data",
+)
+
+parser.add_argument(
+    "-model_type",
+    type=str,
+    help="Type of the classifier model",
+    default="mlp",
+)
+
+parser.add_argument(
+    "-num_epochs",
+    type=int,
+    help="Number of epochs to run",
+    default=20,
+)
+
+args = parser.parse_args()
+
+config["data"] = args.data
+config["model_name"] = args.model_type
+model_name = config["model_name"]
+config["num_epochs"] = args.num_epochs
+
 # %%
 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 df = pd.read_csv(config["data"])
@@ -143,13 +150,20 @@ for key, value in k_fold_split.items():
     # %%s
     model_name = config["model_name"]
     if model_name == "cnn":
-        model = BaselineCNN(num_sensor_channels=6, num_output_classes=12)
+        model = BaselineCNN(
+            num_sensor_channels=6, num_output_classes=12, embed_length=134
+        )
     elif model_name == "cnn_small":
-        model = BaselineCNNSmall(num_sensor_channels=6, num_output_classes=12)
+        model = BaselineCNNSmall(
+            num_sensor_channels=6, num_output_classes=12, embed_length=142
+        )
     elif model_name == "mlp_small":
-        model = MLPSmall(num_sensor_channels=6, num_output_classes=12)
+        model = MLPSmall(
+            num_sensor_channels=6, num_output_classes=12, num_in_features=150
+        )
     elif model_name == "mlp":
-        model = MLP(num_sensor_channels=6, num_output_classes=12)
+        model = MLP(num_sensor_channels=6, num_output_classes=12, num_in_features=150)
+
     model.to(device)
     print(model)
     # %%
@@ -169,7 +183,7 @@ for key, value in k_fold_split.items():
     best_vloss = np.inf
     loss_fn = criterion
 
-    for epoch_number in range(config["NUM_EPOCHS"]):
+    for epoch_number in range(config["num_epochs"]):
         print("EPOCH {}:".format(epoch_number))
         model.train(True)
         model.zero_grad()
@@ -222,7 +236,9 @@ for key, value in k_fold_split.items():
     print(lbl.value_counts())
 
     f1_value = f1_score(
-        y_true=out_label, y_pred=out_pred, average="macro", zero_division=np.nan
+        y_true=out_label,
+        y_pred=out_pred,
+        average="macro",
     )
     print(f1_value)
 
@@ -233,9 +249,7 @@ for key, value in k_fold_split.items():
         y_true=out_label, y_score=out_prob, multi_class="ovr", average="macro"
     )
 
-    f1_per_class = f1_score(
-        y_true=out_label, y_pred=out_pred, average=None, zero_division=np.nan
-    )
+    f1_per_class = f1_score(y_true=out_label, y_pred=out_pred, average=None)
 
     f1_scores_per_class.append(f1_per_class)
 
