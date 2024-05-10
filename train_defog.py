@@ -34,7 +34,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument(
     "-data",
     type=str,
-    help="Path to the preprocessed data for the defogd data",
+    help="Path to the preprocessed data for the defog data",
 )
 
 parser.add_argument(

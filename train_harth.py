@@ -236,7 +236,9 @@ for key, value in k_fold_split.items():
     print(lbl.value_counts())
 
     f1_value = f1_score(
-        y_true=out_label, y_pred=out_pred, average="macro", zero_division=np.nan
+        y_true=out_label,
+        y_pred=out_pred,
+        average="macro",
     )
     print(f1_value)
 
@@ -247,9 +249,7 @@ for key, value in k_fold_split.items():
         y_true=out_label, y_score=out_prob, multi_class="ovr", average="macro"
     )
 
-    f1_per_class = f1_score(
-        y_true=out_label, y_pred=out_pred, average=None, zero_division=np.nan
-    )
+    f1_per_class = f1_score(y_true=out_label, y_pred=out_pred, average=None)
 
     f1_scores_per_class.append(f1_per_class)
 
