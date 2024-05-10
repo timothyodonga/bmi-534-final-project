@@ -68,3 +68,11 @@ config_pretrain_daily_harth = {
     "training_mode": "pre_train",
     "experiment_log_dir": r"./",
 }
+
+
+config_pretrain_daily_defog = {
+    "subset": True,
+    "batch_size": 16,
+    "training_mode": "pre_train",
+    "experiment_log_dir": r"./",
+}
